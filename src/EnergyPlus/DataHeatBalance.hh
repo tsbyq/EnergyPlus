@@ -1171,19 +1171,8 @@ namespace DataHeatBalance {
         int ZoneMaxCO2SchedIndex;           // Index for the schedule the schedule which determines maximum CO2 concentration
         int ZoneContamControllerSchedIndex; // Index for this schedule
         bool FlagCustomizedZoneCap;         // True if customized Zone Capacitance Multiplier is used
-        
-											// Hybrid Modeling
+        // Hybrid Modeling
         Real64 ZoneMeasuredTemperature;       // Measured zone air temperature input by user
-        Real64 ZoneMeasuredHumidityRatio;     // Measured zone air humidity ratio by user
-        Real64 ZoneMeasuredCO2Concentration;  // Measured zone air CO2 concentration input by user
-        Real64 ZoneMeasuredSupplyAirTemperature;  // Measured zone supply air temperature input by user
-        Real64 ZoneMeasuredSupplyAirFlowRate;  // Measured zone supply air flow rate input by user
-        Real64 ZoneMeasuredSupplyAirHumidityRatio;  // Measured zone supply air flow rate input by user
-        Real64 ZoneMeasuredSupplyAirCO2Concentration;  // Measured zone supply air flow rate input by user
-		Real64 ZonePeopleActivityLevel;		  // People activity level input by user
-		Real64 ZonePeopleSensibleHeatFraction;		  // People activity level input by user
-		Real64 ZonePeopleRadiantHeatFraction;		  // People activity level input by user
-		Real64 ZonePeopleCO2GenerationRate;		  // People activity level input by user
         Real64 ZoneVolCapMultpSens;           // Zone temperature capacity multiplier, i.e. internal thermal mass multiplier
         Real64 ZoneVolCapMultpMoist;          // Zone humidity capacity multiplier
         Real64 ZoneVolCapMultpCO2;            // Zone carbon dioxide capacity multiplier
@@ -1194,10 +1183,6 @@ namespace DataHeatBalance {
         Real64 ZoneVolCapMultpSensHMAverage;  // Temperature capacity multiplier average
         Real64 MCPIHM;                        // Calculated mass flow rate by hybrid model
         Real64 InfilOAAirChangeRateHM;        // Calculated infiltration air change per hour by hybrid model
-        Real64 NumOccHM;                      // Inversely solved people count
-        Real64 delta_T; // Indoor and outdoor temperature
-        Real64 delta_HumRat; // Indoor and outdoor humidity ratio delta
-        Real64 delta_CO2; // Indoor and outdoor humidity ratio delta
 
         // Default Constructor
         ZoneData()
@@ -1222,13 +1207,7 @@ namespace DataHeatBalance {
               // Hybrid Modeling
               ZoneMeasuredTemperature(0.0), ZoneVolCapMultpSens(1.0), ZoneVolCapMultpMoist(1.0), ZoneVolCapMultpCO2(1.0),
               ZoneVolCapMultpGenContam(1.0), ZoneVolCapMultpSensHM(1.0), ZoneVolCapMultpSensHMSum(0.0), ZoneVolCapMultpSensHMCountSum(0.0),
-              ZoneVolCapMultpSensHMAverage(1.0), MCPIHM(0.0), InfilOAAirChangeRateHM(0.0),
-              ZoneMeasuredHumidityRatio(0.0), ZoneMeasuredCO2Concentration(0.0), 
-              ZoneMeasuredSupplyAirTemperature(0.0), ZoneMeasuredSupplyAirFlowRate(0.0), ZoneMeasuredSupplyAirHumidityRatio(0.0),ZoneMeasuredSupplyAirCO2Concentration(0.0),
-              ZonePeopleActivityLevel(0.0), ZonePeopleSensibleHeatFraction(0.0), ZonePeopleRadiantHeatFraction(0.0), ZonePeopleCO2GenerationRate(0.0),
-              delta_T(0.0), delta_HumRat(0.0), delta_CO2(0.0)
-
-
+              ZoneVolCapMultpSensHMAverage(1.0), MCPIHM(0.0), InfilOAAirChangeRateHM(0.0)
         {
         }
 
