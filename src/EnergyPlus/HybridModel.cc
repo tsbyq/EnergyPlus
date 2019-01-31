@@ -433,6 +433,29 @@ namespace HybridModel {
                         AirModel(ZonePtr).AirModelType = RoomAirModel_Mixing;
                         ShowWarningError("Room Air Model Type should be Mixing if Hybrid Modeling is performed for the zone.");
                     }
+                    if (helper_AirInfiltrationCalc) {
+                        SetupOutputVariable("Zone Infiltration Hybrid Model Air Change Rate", 
+                                            OutputProcessor::Unit::ach, 
+                                            Zone(ZoneLoop).InfilOAAirChangeRateHM, 
+                                            "Zone", 
+                                            "Average", 
+                                            Zone(ZoneLoop).Name);
+                        SetupOutputVariable("Zone Infiltration Hybrid Model Mass Flow Rate", 
+                                            OutputProcessor::Unit::kg_s, 
+                                            Zone(ZoneLoop).MCPIHM,
+                                            "Zone", 
+                                            "Average", 
+                                            Zone(ZoneLoop).Name);
+                    }
+
+                    if (helper_PeopleCountCalc) {
+                        SetupOutputVariable("Zone Hybrid Model People Count", 
+                                            OutputProcessor::Unit::None, 
+                                            Zone(ZoneLoop).NumOccHM,
+                                            "Zone", 
+                                            "Average", 
+                                            Zone(ZoneLoop).Name);
+                    }
                 }
             }
 
