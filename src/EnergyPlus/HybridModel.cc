@@ -447,7 +447,6 @@ namespace HybridModel {
                                             "Average", 
                                             Zone(ZoneLoop).Name);
                     }
-
                     if (helper_PeopleCountCalc) {
                         SetupOutputVariable("Zone Hybrid Model People Count", 
                                             OutputProcessor::Unit::None, 

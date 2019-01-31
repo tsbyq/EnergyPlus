@@ -1226,7 +1226,7 @@ namespace DataHeatBalance {
               ZoneMeasuredHumidityRatio(0.0), ZoneMeasuredCO2Concentration(0.0), 
               ZoneMeasuredSupplyAirTemperature(0.0), ZoneMeasuredSupplyAirFlowRate(0.0), ZoneMeasuredSupplyAirHumidityRatio(0.0),ZoneMeasuredSupplyAirCO2Concentration(0.0),
               ZonePeopleActivityLevel(0.0), ZonePeopleSensibleHeatFraction(0.0), ZonePeopleRadiantHeatFraction(0.0), ZonePeopleCO2GenerationRate(0.0),
-              delta_T(0.0), delta_HumRat(0.0), delta_CO2(0.0)
+              NumOccHM(0.0), delta_T(0.0), delta_HumRat(0.0), delta_CO2(0.0)
 
 
         {
