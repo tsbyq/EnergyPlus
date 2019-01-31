@@ -346,6 +346,12 @@ namespace DataHeatBalFanSys {
         ZTM1.deallocate();
         ZTM2.deallocate();
         ZTM3.deallocate();
+        PreviousMeasuredZT1.deallocate();
+        PreviousMeasuredZT2.deallocate();
+        PreviousMeasuredZT3.deallocate();
+        PreviousMeasuredHumRat1.deallocate();
+        PreviousMeasuredHumRat2.deallocate();
+        PreviousMeasuredHumRat3.deallocate();
         ZoneTMX.deallocate();
         ZoneTM2.deallocate();
         ZoneT1.deallocate();
