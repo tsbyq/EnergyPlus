@@ -2373,6 +2373,19 @@ namespace ZoneContaminantPredictorCorrector {
         int ADUInNode;
         int ADUOutNode;
         int ZoneNum;
+        // Added for the new hybrid model feature
+        Real64 AA(0.0); // Sum of air mass flow terms except infiltration. (AA = A - M_inf)
+        Real64 BB(0.0); // Sum of air mass flow rate times correcponding CO2 concentration except infiltration. (BB = B - M_inf * C_out)
+        Real64 CC(0.0);
+        Real64 DD(0.0);
+        Real64 zone_M_CO2(0.0);
+        Real64 delta_CO2(0.0);
+        Real64 AirDensity(0.0);
+        Real64 CpAir(0.0);
+        Real64 M_inf(0.0); // Reversely solved infiltration mass flow rate
+        Real64 ACH_inf(0.0); // Reversely solved infiltration air change rate
+        Real64 SumSysM_HM(0.0);
+        Real64 SumSysMxCO2_HM(0.0);
 
         // FLOW:
         // Update zone CO2
@@ -2630,21 +2643,6 @@ namespace ZoneContaminantPredictorCorrector {
 						ZoneAirCO2(ZoneNum) = Zone(ZoneNum).ZoneMeasuredCO2Concentration;
 
 						if (HybridModelZone(ZoneNum).InfiltrationCalc_C && UseZoneTimeStepHistory) {
-							Real64 AA(0.0); // Sum of air mass flow terms except infiltration. (AA = A - M_inf)
-                            Real64 BB(0.0); // Sum of air mass flow rate times correcponding CO2 concentration except infiltration. (BB = B - M_inf * C_out)
-							Real64 CC(0.0);
-							Real64 DD(0.0);
-
-                            Real64 zone_M_CO2(0.0);
-                            Real64 delta_CO2(0.0);
-
-							Real64 AirDensity(0.0);
-                            Real64 CpAir(0.0);
-                            Real64 M_inf(0.0); // Reversely solved infiltration mass flow rate
-                            Real64 ACH_inf(0.0); // Reversely solved infiltration air change rate
-
-							Real64 SumSysM_HM(0.0);
-							Real64 SumSysMxCO2_HM(0.0);
 
 							static std::string const RoutineNameInfiltration("CalcAirFlowSimple:Infiltration");
 
