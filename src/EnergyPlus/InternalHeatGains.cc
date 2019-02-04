@@ -7027,10 +7027,7 @@ namespace InternalHeatGains {
 			return;
 		}
 
-		std::string tt_CompObjectType;
-
 		for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
-			tt_CompObjectType = ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType;
 			if (ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people) {
 				tmpSumConvGainRateExceptPeople  += ZoneIntGain(ZoneNum).Device(DeviceNum).ConvectGainRate;
 			}
@@ -7577,7 +7574,6 @@ namespace InternalHeatGains {
         }
 
         for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
-            tt_CompObjectType = ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType;
             if(ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people){
                 tmpSumCO2GainRateExceptPeople += ZoneIntGain(ZoneNum).Device(DeviceNum).CarbonDioxideGainRate;
             }

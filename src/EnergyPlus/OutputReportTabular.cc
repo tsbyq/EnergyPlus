@@ -10502,7 +10502,7 @@ namespace OutputReportTabular {
 
                 for (iZone = 1; iZone <= NumOfZones; ++iZone) {
                     rowHead(iZone) = Zone(iZone).Name;
-                    if (HybridModelZone(iZone).InternalThermalMassCalc) {
+                    if (HybridModelZone(iZone).InternalThermalMassCalc_T) {
                         tableBody(1, iZone) = "Yes";
                     } else {
                         tableBody(1, iZone) = "No";

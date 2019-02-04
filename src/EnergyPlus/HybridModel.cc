@@ -59,6 +59,7 @@
 #include <InputProcessing/InputProcessor.hh>
 #include <ScheduleManager.hh>
 #include <UtilityRoutines.hh>
+#include <OutputProcessor.hh>
 
 namespace EnergyPlus {
 
@@ -436,24 +437,24 @@ namespace HybridModel {
                     if (helper_AirInfiltrationCalc) {
                         SetupOutputVariable("Zone Infiltration Hybrid Model Air Change Rate", 
                                             OutputProcessor::Unit::ach, 
-                                            Zone(ZoneLoop).InfilOAAirChangeRateHM, 
+                                            Zone(ZonePtr).InfilOAAirChangeRateHM, 
                                             "Zone", 
                                             "Average", 
-                                            Zone(ZoneLoop).Name);
+                                            Zone(ZonePtr).Name);
                         SetupOutputVariable("Zone Infiltration Hybrid Model Mass Flow Rate", 
                                             OutputProcessor::Unit::kg_s, 
-                                            Zone(ZoneLoop).MCPIHM,
+                                            Zone(ZonePtr).MCPIHM,
                                             "Zone", 
                                             "Average", 
-                                            Zone(ZoneLoop).Name);
+                                            Zone(ZonePtr).Name);
                     }
                     if (helper_PeopleCountCalc) {
                         SetupOutputVariable("Zone Hybrid Model People Count", 
                                             OutputProcessor::Unit::None, 
-                                            Zone(ZoneLoop).NumOccHM,
+                                            Zone(ZonePtr).NumOccHM,
                                             "Zone", 
                                             "Average", 
-                                            Zone(ZoneLoop).Name);
+                                            Zone(ZonePtr).Name);
                     }
                 }
             }
