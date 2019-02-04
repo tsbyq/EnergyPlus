@@ -278,8 +278,7 @@ namespace ZoneTempPredictorCorrector {
                       Real64 &SumMCp,     // Zone sum of MassFlowRate*Cp
                       Real64 &SumMCpT,    // Zone sum of MassFlowRate*Cp*T
                       Real64 &SumSysMCp,  // Zone sum of air system MassFlowRate*Cp
-                      Real64 &SumSysMCpT,  // Zone sum of air system MassFlowRate*Cp*T
-                      Real64 &SumIntGainExceptPeople  // Zone sum of convective internal gains except for people
+                      Real64 &SumSysMCpT  // Zone sum of air system MassFlowRate*Cp*T
     );
 
 	// Overload to calculate zone internal heat gains except people

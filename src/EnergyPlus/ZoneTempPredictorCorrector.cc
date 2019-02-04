@@ -3338,6 +3338,7 @@ namespace ZoneTempPredictorCorrector {
         using General::TrimSigDigits;
         using RoomAirModelAirflowNetwork::LoadPredictionRoomAirModelAirflowNetwork;
         using ScheduleManager::GetCurrentScheduleValue;
+        using InternalHeatGains::SumAllInternalConvectionGainsExceptPeople;
 
         // Locals
         // SUBROUTINE ARGUMENT DEFINITIONS:
@@ -3367,6 +3368,8 @@ namespace ZoneTempPredictorCorrector {
         int RoomAirNode;
         int LoopNode;
         Real64 RAFNFrac;
+
+        SumIntGainExceptPeople = 0.0;
 
         // Staged thermostat setpoint
         if (NumStageCtrZone > 0) {
@@ -3709,7 +3712,10 @@ namespace ZoneTempPredictorCorrector {
             // Calculate the various heat balance sums
 
             // NOTE: SumSysMCp and SumSysMCpT are not used in the predict step
-            CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT, SumIntGainExceptPeople);
+            CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
+
+            // Sum all convective internal gains except for people: SumIntGainExceptPeople
+            SumAllInternalConvectionGainsExceptPeople(ZoneNum, SumIntGainExceptPeople);
 
             TempDepCoef = SumHA + SumMCp;
             TempIndCoef = SumIntGain + SumHATsurf - SumHATref + SumMCpT + SysDepZoneLoadsLagged(ZoneNum);
@@ -4812,6 +4818,7 @@ namespace ZoneTempPredictorCorrector {
         using RoomAirModelManager::ManageAirModel;
 
 		// HybridModel
+		using InternalHeatGains::SumAllInternalConvectionGainsExceptPeople;
 		using ScheduleManager::GetCurrentScheduleValue;
 		using ScheduleManager::GetScheduleMinValue;
 		using ScheduleManager::GetScheduleMaxValue;
@@ -4986,11 +4993,10 @@ namespace ZoneTempPredictorCorrector {
 
             // Calculate the various heat balance sums
             // CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
-            CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT, SumIntGainExceptPeople);
+            CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
 
-
-			// HybridModel -- Need a new overloading function to get the sum of internal convective heat gain except for people
-            // CalcZoneSums(ZoneNum, SumIntGainExceptPeople);
+            // Sum all convective internal gains except for people: SumIntGainExceptPeople
+            SumAllInternalConvectionGainsExceptPeople(ZoneNum, SumIntGainExceptPeople);
 
 
             //    ZoneTempHistoryTerm = (3.0D0 * ZTM1(ZoneNum) - (3.0D0/2.0D0) * ZTM2(ZoneNum) + (1.0D0/3.0D0) * ZTM3(ZoneNum))
@@ -5727,6 +5733,8 @@ namespace ZoneTempPredictorCorrector {
 		using DataGlobals::DayOfSim;
 		using DataGlobals::HourOfDay;
 
+		using InternalHeatGains::SumAllInternalConvectionGainsExceptPeople;
+
         // Locals
         // SUBROUTINE ARGUMENT DEFINITIONS:
 
@@ -5767,7 +5775,6 @@ namespace ZoneTempPredictorCorrector {
         static Real64 SumMCpT(0.0);        // Zone sum of MassFlowRate*Cp*T
         static Real64 SumSysMCp(0.0);      // Zone sum of air system MassFlowRate*Cp
         static Real64 SumSysMCpT(0.0);     // Zone sum of air system MassFlowRate*Cp*T
-
 
 		static Real64 SumIntGainExceptPeople(0.0);     // Zone sum of convective internal gains
 
@@ -5829,9 +5836,10 @@ namespace ZoneTempPredictorCorrector {
 
         // Calculate zone heat balance sums
         // CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
-        CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT, SumIntGainExceptPeople);
+        CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
 
-		// CalcZoneSums(ZoneNum, SumIntGainExceptPeople); // Get sensible heat except people
+		// Sum all convective internal gains except for people: SumIntGainExceptPeople
+        SumAllInternalConvectionGainsExceptPeople(ZoneNum, SumIntGainExceptPeople);
 
         // Calculate hourly humidity ratio from infiltration + humdidity added from latent load + system added moisture
         LatentGain = ZoneLatentGain(ZoneNum) + SumLatentHTRadSys(ZoneNum) + SumLatentPool(ZoneNum);
@@ -6160,8 +6168,7 @@ namespace ZoneTempPredictorCorrector {
                       Real64 &SumMCp,     // Zone sum of MassFlowRate*Cp
                       Real64 &SumMCpT,    // Zone sum of MassFlowRate*Cp*T
                       Real64 &SumSysMCp,  // Zone sum of air system MassFlowRate*Cp
-                      Real64 &SumSysMCpT,  // Zone sum of air system MassFlowRate*Cp*T
-                      Real64 &SumIntGainExceptPeople // Zone sum of convective internal gains except for people
+                      Real64 &SumSysMCpT  // Zone sum of air system MassFlowRate*Cp*T
     )
     {
 
@@ -6195,7 +6202,6 @@ namespace ZoneTempPredictorCorrector {
         using DataZoneEquipment::ZoneEquipConfig;
         using InternalHeatGains::SumAllInternalConvectionGains;
         using InternalHeatGains::SumAllReturnAirConvectionGains;
-        using InternalHeatGains::SumAllInternalConvectionGainsExceptPeople;
         using ZonePlenum::ZoneRetPlenCond;
         using ZonePlenum::ZoneSupPlenCond;
 
@@ -6224,7 +6230,6 @@ namespace ZoneTempPredictorCorrector {
 
         // FLOW:
         SumIntGain = 0.0;
-        SumIntGainExceptPeople = 0.0;
         SumHA = 0.0;
         SumHATsurf = 0.0;
         SumHATref = 0.0;
@@ -6236,9 +6241,6 @@ namespace ZoneTempPredictorCorrector {
         // Sum all convective internal gains: SumIntGain
         SumAllInternalConvectionGains(ZoneNum, SumIntGain);
         SumIntGain += SumConvHTRadSys(ZoneNum) + SumConvPool(ZoneNum);
-
-        // Sum all convective internal gains except for people: SumIntGainExceptPeople
-        SumAllInternalConvectionGainsExceptPeople(ZoneNum, SumIntGainExceptPeople);
 
         // Add heat to return air if zonal system (no return air) or cycling system (return air frequently very
         // low or zero)
@@ -6441,18 +6443,6 @@ namespace ZoneTempPredictorCorrector {
 
         } // SurfNum
     }
-
-	void CalcZoneSums(int const ZoneNum,			 // Zone number
-					  Real64 &SumIntGainExceptPeople // Zone sum of convective internal gains except for people
-	) {
-		// Using/Aliasing
-		using InternalHeatGains::SumAllInternalConvectionGainsExceptPeople;
-
-		SumIntGainExceptPeople = 0.0;
-
-		// Sum all convective internal gains except for people: SumIntGainExceptPeople
-		SumAllInternalConvectionGainsExceptPeople(ZoneNum, SumIntGainExceptPeople);
-	}
 
     void CalcZoneComponentLoadSums(int const ZoneNum,        // Zone number
                                    Real64 const TempDepCoef, // Dependent coefficient
