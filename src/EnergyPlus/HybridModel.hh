@@ -65,7 +65,7 @@ namespace HybridModel {
     // MODULE PARAMETER DEFINITIONS
 
     // MODULE VARIABLE TYPE DECLARATIONS:
-    extern bool FlagHybridModel;      // True if hybrid model is activated
+    extern bool FlagHybridModel_TM;      // True if hybrid model is activated
     extern int NumOfHybridModelZones; // Number of hybrid model zones in the model
 
     // SUBROUTINE SPECIFICATIONS:
