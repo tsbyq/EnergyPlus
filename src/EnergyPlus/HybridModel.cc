@@ -193,7 +193,7 @@ namespace HybridModel {
                     SupplyAirHumidityRatioSchPtr = GetScheduleIndex(cAlphaArgs(15));
                     SupplyAirCO2ConcentrationSchPtr = GetScheduleIndex(cAlphaArgs(16));
 
-                    /*	Note: Internal thermal mass can be calculated only with measured temperature.
+                    /*  Note: Internal thermal mass can be calculated only with measured temperature.
                                       Air infiltration rate can be calculated with either measured temperature, humifity ratio, or CO2 concentration.
                                       People count can be calculated with either measured temperature, humifity ratio, or CO2 concentration.
                     */
@@ -214,114 +214,77 @@ namespace HybridModel {
 
                     // Scenario 1: Only one unknown parameter to solve
                     // Scenario 1-1: To solve thermal mass
-                    if (FlagHybridModel_TM && !FlagHybridModel_AI && !FlagHybridModel_PC) {
-                        // Only measured temperature can be used to solve internal thermal mass
-                        if (TemperatureSchPtr > 0) {
+                    if (FlagHybridModel_TM) {
+                        if (FlagHybridModel_AI || FlagHybridModel_PC) {
+                            ShowWarningError("Only internal thermal mass will be calculated.");
+                        }
+                        if (TemperatureSchPtr == 0) {
+                            ShowFatalError("Measured Zone Air Tempearture Schedule is not defined for: " + CurrentModuleObject);
+                        } else {
                             HybridModelZone(ZonePtr).InternalThermalMassCalc_T = true;
                         }
                     }
 
                     // Scenario 1-2: To solve infiltration rate
-                    if (!FlagHybridModel_TM && FlagHybridModel_AI && !FlagHybridModel_PC) {
-                        // !!! Need to determine which variable to use if three variables are all available
-                        // Temperature is measured
-                        if (TemperatureSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InfiltrationCalc_T = true;
+                    if (FlagHybridModel_AI) {
+                        if (FlagHybridModel_PC) {
+                            ShowWarningError("Only air infiltration rate will be calculated.");
                         }
-                        // Humidity ratio is measured
-                        if (HumidityRatioSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InfiltrationCalc_H = true;
-                        }
-                        // CO2 concentration is measured
-                        if (CO2ConcentrationSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InfiltrationCalc_C = true;
+                        if (TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0 && CO2ConcentrationSchPtr == 0) {
+                            // Show fatal error if no measurement schedule is provided
+                            ShowFatalError("No measured envrionmental parameter is provided for: " + CurrentModuleObject);
+                        } else {
+                            if (TemperatureSchPtr > 0) {
+                                // Temperature schedule is provided, igonore humidity ratio and CO2 concentration schedules.
+                                HybridModelZone(ZonePtr).InfiltrationCalc_T = true;
+                                if(HumidityRatioSchPtr > 0){
+                                    ShowWarningError("The meausured air humidity ratio schedule will not be used since measured air temperature is provided.");
+                                }
+                                if(CO2ConcentrationSchPtr > 0){
+                                    ShowWarningError("The meausured air CO2 concentration schedule will not be used since measured air temperature is provided.");
+                                }
+                            }
+                            if (HumidityRatioSchPtr > 0 && TemperatureSchPtr == 0) {
+                                // Humidity ratio schedule is provided, ignore CO2 concentration schedule.
+                                HybridModelZone(ZonePtr).InfiltrationCalc_H = true;
+                                if(CO2ConcentrationSchPtr > 0){
+                                    ShowWarningError("The meausured air CO2 concentration schedule will not be used since measured air temperature is provided.");
+                                }
+                            }
+                            if (CO2ConcentrationSchPtr > 0 && TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0) {
+                                // Only CO2 concentration schedule is provided.
+                                HybridModelZone(ZonePtr).InfiltrationCalc_C = true;
+                            }
                         }
                     }
 
                     // Scenario 1-3: To solve people count
-                    if (!FlagHybridModel_TM && !FlagHybridModel_AI && FlagHybridModel_PC) {
-                        // !!! Need to determine which variable to use if three variables are all available
-                        // Temperature is measured
-                        if (TemperatureSchPtr > 0) {
-                            HybridModelZone(ZonePtr).PeopelCountCalc_T = true;
-                        }
-                        // Humidity ratio is measured
-                        if (HumidityRatioSchPtr > 0) {
-                            HybridModelZone(ZonePtr).PeopelCountCalc_H = true;
-                        }
-                        // CO2 concentration is measured
-                        if (CO2ConcentrationSchPtr > 0) {
-                            HybridModelZone(ZonePtr).PeopelCountCalc_C = true;
-                        }
-                    }
-
-                    // Scenario 2: Two unknown parameters to solve
-                    // Scenario 2-1: To solve thermal mass and infiltration rate
-                    if (FlagHybridModel_TM && FlagHybridModel_AI && !FlagHybridModel_PC) {
-                        // Temperature and humidity ratio are measured
-                        if (TemperatureSchPtr > 0 && HumidityRatioSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InternalThermalMassCalc_T = true;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_H = true;
-                        }
-                        // Temperature and CO2 concentration are measured
-                        if (TemperatureSchPtr > 0 && CO2ConcentrationSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InternalThermalMassCalc_T = true;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_C = true;
-                        }
-                    }
-
-                    // Scenario 2-2: To solve thermal mass and people count
-                    if (FlagHybridModel_TM && !FlagHybridModel_AI && FlagHybridModel_PC) {
-                        // Temperature and humidity ratio are measured
-                        if (TemperatureSchPtr > 0 && HumidityRatioSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InternalThermalMassCalc_T = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_H = true;
-                        }
-                        // Temperature and CO2 concentration are measured
-                        if (TemperatureSchPtr > 0 && CO2ConcentrationSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InternalThermalMassCalc_T = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_C = true;
-                        }
-                    }
-
-                    // Scenario 2-3: To solve infiltration rate and people count
-                    if (!FlagHybridModel_TM && FlagHybridModel_AI && FlagHybridModel_PC) {
-
-                        // !!! Consider: which variable to use?
-
-                        // Temperature and humidity ratio are measured
-                        if (TemperatureSchPtr > 0 && HumidityRatioSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InfiltrationCalc_T = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_T = true;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_H = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_H = true;
-                        }
-                        // Temperature and CO2 concentration are measured
-                        if (TemperatureSchPtr > 0 && CO2ConcentrationSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InfiltrationCalc_T = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_T = true;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_C = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_C = true;
-                        }
-                        //  Humidity ratio and CO2 concentration are measured
-                        if (HumidityRatioSchPtr > 0 && CO2ConcentrationSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InfiltrationCalc_H = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_H = true;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_C = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_C = true;
-                        }
-                    }
-
-                    // Scenario 3: Three unknown parameters to solve
-                    if (FlagHybridModel_TM && FlagHybridModel_AI && FlagHybridModel_PC) {
-                        if (TemperatureSchPtr > 0 && HumidityRatioSchPtr > 0 && CO2ConcentrationSchPtr > 0) {
-                            HybridModelZone(ZonePtr).InternalThermalMassCalc_T = false;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_T = true;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_H = true;
-                            HybridModelZone(ZonePtr).InfiltrationCalc_C = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_T = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_H = true;
-                            HybridModelZone(ZonePtr).PeopelCountCalc_C = true;
+                    if(FlagHybridModel_PC){
+                        if(TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0 && CO2ConcentrationSchPtr == 0){
+                            // Show fatal error if no measurement schedule is provided
+                            ShowFatalError("No measured envrionmental parameter is provided for: " + CurrentModuleObject);  
+                        } else{
+                            if (TemperatureSchPtr > 0) {
+                                // Temperature schedule is provided, igonore humidity ratio and CO2 concentration schedules.
+                                HybridModelZone(ZonePtr).PeopelCountCalc_T = true;
+                                if(HumidityRatioSchPtr > 0){
+                                    ShowWarningError("The meausured air humidity ratio schedule will not be used since measured air temperature is provided.");
+                                }
+                                if(CO2ConcentrationSchPtr > 0){
+                                    ShowWarningError("The meausured air CO2 concentration schedule will not be used since measured air temperature is provided.");
+                                }
+                            }
+                            if (HumidityRatioSchPtr > 0 && TemperatureSchPtr == 0) {
+                                // Humidity ratio schedule is provided, ignore CO2 concentration schedule.
+                                HybridModelZone(ZonePtr).PeopelCountCalc_H = true;
+                                if(CO2ConcentrationSchPtr > 0){
+                                    ShowWarningError("The meausured air CO2 concentration schedule will not be used since measured air temperature is provided.");
+                                }
+                            }
+                            if (CO2ConcentrationSchPtr > 0 && TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0) {
+                                // Only CO2 concentration schedule is provided.
+                                HybridModelZone(ZonePtr).PeopelCountCalc_C = true;
+                            }
                         }
                     }
 
@@ -361,8 +324,6 @@ namespace HybridModel {
                     FlagHybridModel = helper_InternalThermalMassCalc || helper_AirInfiltrationCalc || helper_PeopleCountCalc;
 
                     if (FlagHybridModel) {
-                        // Here are the logic of getting inputs from idf.
-                        // Need to update the section below
                         HybridModelZone(ZonePtr).ZoneMeasuredTemperatureSchedulePtr = GetScheduleIndex(cAlphaArgs(6));
                         HybridModelZone(ZonePtr).ZoneMeasuredHumidityRatioSchedulePtr = GetScheduleIndex(cAlphaArgs(7));
                         HybridModelZone(ZonePtr).ZoneMeasuredCO2ConcentrationSchedulePtr = GetScheduleIndex(cAlphaArgs(8));
