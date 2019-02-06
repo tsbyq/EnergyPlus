@@ -52,49 +52,49 @@ When YES is selected, the hybrid model calculates the zone people count based on
 When YES is selected for Field: Calculate Zone Internal Thermal Mass or Field: Calculate Zone Air Infiltration Rate, this field will be treated as NO.
 
 \paragraph{Field: Zone Measured Air Temperature Schedule Name}\label{field-zone-measured-air-temperature-schedule-name-hm}
-This field is the name of the schedule referenced by Schedule:File which contains the zone air temperature measurement data. When
+This field is the name of the schedule object which contains the zone air temperature measurement data. A Schedule:File object is recommended for inputing the time-series measurements. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Measured Air Humidity Ratio Schedule Name}\label{field-zone-measured-air-humidity-ratio-schedule-name-hm}
-This field is the name of the schedule referenced by Schedule:File which contains the zone air humidity ration measurement data.
+This field is the name of the schedule object which contains the zone air humidity ration measurement data. A Schedule:File object is recommended for inputing the time-series measurements. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Measured Air CO$_2$ concentration Schedule Name}\label{field-zone-measured-air-co2-concentration-schedule-name-hm}
-This field is the name of the schedule referenced by Schedule:File which contains the zone air CO$_2$ concentration measurement data.
+This field is the name of the schedule object which contains the zone air CO$_2$ concentration measurement data. A Schedule:File object is recommended for inputing the time-series measurements. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input People Activity Level Schedule Name}\label{field-zone-input-people-activity-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule object which contains the people activity level data.
+This field is the name of the schedule referenced by a Schedule object which contains the people activity level data. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input People Sensible Heat Fraction Schedule Name}\label{field-zone-input-people-sensible-heat-fraction-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule object which contains the people sensible heat fraction data.
+This field is the name of the schedule referenced by a Schedule object which contains the people sensible heat fraction data. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input People Radiant Heat Fraction Schedule Name}\label{field-zone-input-people-radiant-heat-fraction-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule object which contains the radiant heat fration of the sensible heat data.
+This field is the name of the schedule referenced by a Schedule object which contains the radiant heat fraction of the sensible heat data. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input People CO$_2$ Generation Rate Schedule Name}\label{field-zone-input-people-co2-generation-rate-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule object which contains a single person's CO$_2$ generation rate data.
+This field is the name of the schedule referenced by a Schedule object which contains a single person's CO$_2$ generation rate data. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input Supply Air Temperature Schedule Name}\label{field-zone-input-supply-air-temperature-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule:File object which contains the measured supply air temperature data.
+This field is the name of the schedule object which contains the measured supply air temperature data. A Schedule:File object is recommended for inputing the time-series measurements. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input Supply Air Mass Flow Rate Schedule Name}\label{field-zone-input-supply-air-mass-flow-rate-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule:File object which contains the measured supply air mass flow rate data.
+This field is the name of the schedule object which contains the measured supply air mass flow rate data. A Schedule:File object is recommended for inputing the time-series measurements. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input Supply Air Humidity Ratio Schedule Name}\label{field-zone-input-supply-air-humidity-ratio-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule:File object which contains the measured supply air humidity ratio data.
+This field is the name of the schedule object which contains the measured supply air humidity ratio data. A Schedule:File object is recommended for inputing the time-series measurements. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input Supply Air CO$_2$ Concentration Schedule Name}\label{field-zone-input-supply-air-co2-concentration-schedule-name-hm}
-This field is the name of the schedule referenced by a Schedule:File object which contains the measured supply air CO$_2$ concentration data.
+This field is the name of the schedule object which contains the measured supply air CO$_2$ concentration data. A Schedule:File object is recommended for inputing the time-series measurements. The date range of the schedule should include the start and end date of the HybridModel.
 
 \paragraph{Field: Begin Month}\label{field-begin-month-hm}
-This numeric field should contain the starting month number (1 = January, 2 = February, etc.) for the annual run period desired.
+This numeric field should contain the starting month number (1 = January, 2 = February, etc.) for the period of the measured data during which the hybrid model will be active.
 
 \paragraph{Field: Begin Day of Month}\label{field-begin-day-of-month-hm}
-This numeric field should contain the starting day of the starting month (must be valid for month) for the annual run period desired.
+This numeric field should contain the starting day of the starting month (must be valid for month) for the period of the measured data during which the hybrid model will be active.
 
 \paragraph{Field: End Month}\label{field-end-month-hm}
-This numeric field should contain the ending month number (1 = January, 2 = February, etc.) for the annual run period desired.
+This numeric field should contain the ending month number (1 = January, 2 = February, etc.) for the period of the measured data during which the hybrid model will be active.
 
 \paragraph{Field: End Day of Month}\label{field-end-day-of-month-hm}
-This numeric field should contain the ending day of the ending month (must be valid for month) for the annual run period desired.
+This numeric field should contain the ending day of the ending month (must be valid for month) for the period of the measured data during which the hybrid model will be active.
 
 Examples of the object in an IDF are:
 
@@ -110,7 +110,7 @@ Examples of the object in an IDF are:
         ,                        !- Zone Measured Air Humidity Ratio Schedule Name
         ZONE 1_MeasuredCO2Concentration,  !- Zone Measured Air CO2 Concentration Schedule Name
         ,                        !- Zone Input People Activity Schedule Name
-        ,                        !- Zone Input People Sensivle Heat Fraction Schedule Name
+        ,                        !- Zone Input People Sensible Heat Fraction Schedule Name
         ,                        !- Zone Input People Radiant Heat Fraction Schedule Name
         ,                        !- Zone Input People CO2 Generation Rate Schedule Name
         ,                        !- Zone Input Supply Air Temperature Schedule Name
@@ -133,7 +133,7 @@ Examples of the object in an IDF are:
         ,                        !- Zone Measured Air Humidity Ratio Schedule Name
         ZONE 1_MeasuredCO2Concentration,  !- Zone Measured Air CO2 Concentration Schedule Name
         ,                        !- Zone Input People Activity Schedule Name
-        ,                        !- Zone Input People Sensivle Heat Fraction Schedule Name
+        ,                        !- Zone Input People Sensible Heat Fraction Schedule Name
         ,                        !- Zone Input People Radiant Heat Fraction Schedule Name
         ,                        !- Zone Input People CO2 Generation Rate Schedule Name
         ,                        !- Zone Input Supply Air Temperature Schedule Name
@@ -156,7 +156,7 @@ Examples of the object in an IDF are:
         ,                        !- Zone Measured Air Humidity Ratio Schedule Name
         ZONE 2_MeasuredCO2Concentration,     !- Zone Measured Air CO2 Concentration Schedule Name
         OfficeSmall ACTIVITY_SCH,            !- Zone Input People Activity Schedule Name
-        People Sensible Heat Fraction Sch,   !- Zone Input People Sensivle Heat Fraction Schedule Name
+        People Sensible Heat Fraction Sch,   !- Zone Input People Sensible Heat Fraction Schedule Name
         People Radiation Heat Fraction Sch,  !- Zone Input People Radiant Heat Fraction Schedule Name
         People CO2 Generation Rate Sch,      !- Zone Input People CO2 Generation Rate Schedule Name
         ,                        !- Zone Input Supply Air Temperature Schedule Name
@@ -181,12 +181,12 @@ Zone,Average,Zone Hybrid Model People Count
 
 \paragraph{Zone Infiltration Hybrid Model Air Change Rate {[}ACH{]}}\label{zone-infiltration-hybrid-model-air-change-rate}
 
-The zone infiltration air change rate calculated by the hybird model.
+The zone infiltration air change rate calculated by the hybrid model.
 
 \paragraph{Zone Infiltration Hybrid Model Mass Flow Rate {[}kg/s{]}}\label{zone-infiltration-hybrid-model-air-mass-flow-rate}
 
-The zone infiltration air mass flow rate calculated by the hybird model.
+The zone infiltration air mass flow rate calculated by the hybrid model.
 
 \paragraph{Zone Hybrid Model People Count}\label{zone-infiltration-hybrid-model-people-count}
 
-The zone people count calculated by the hybird model.
+The zone people count calculated by the hybrid model.
