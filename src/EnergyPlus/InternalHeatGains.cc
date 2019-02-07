@@ -6005,7 +6005,7 @@ namespace InternalHeatGains {
             SumAllInternalRadiationGains(NZ, QL(NZ));
 
             SumAllInternalLatentGains(NZ, ZoneLatentGain(NZ));
-			SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ)); // Added for hybrid model
+            SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ)); // Added for hybrid model
         }
 
         SumConvHTRadSys = 0.0;
@@ -6311,7 +6311,7 @@ namespace InternalHeatGains {
             }
             if (ZoneITEq(Loop).UPSEfficFPLRCurve != 0) {
                 UPSPower = (CPUPower + FanPower) *
-                    max((1.0 - ZoneITEq(Loop).DesignUPSEfficiency * CurveValue(ZoneITEq(Loop).UPSEfficFPLRCurve, UPSPartLoadRatio)), 0.0);
+                           max((1.0 - ZoneITEq(Loop).DesignUPSEfficiency * CurveValue(ZoneITEq(Loop).UPSEfficFPLRCurve, UPSPartLoadRatio)), 0.0);
             } else {
                 UPSPower = (CPUPower + FanPower) * max((1.0 - ZoneITEq(Loop).DesignUPSEfficiency), 0.0);
             }
@@ -6949,7 +6949,7 @@ namespace InternalHeatGains {
             if (ReSumLatentGains) {
                 SumAllInternalLatentGains(NZ, ZoneLatentGain(NZ));
                 // Added for the hybrid model
-				SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ));
+                SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ));
             }
         }
 
@@ -7013,27 +7013,26 @@ namespace InternalHeatGains {
         SumConvGainRate = tmpSumConvGainRate;
     }
 
+    // For HybridModel
+    void SumAllInternalConvectionGainsExceptPeople(int const ZoneNum, Real64 &SumConvGainRateExceptPeople)
+    {
+        Real64 tmpSumConvGainRateExceptPeople;
+        int DeviceNum;
+        std::string str_people = "PEOPLE";
+        tmpSumConvGainRateExceptPeople = 0.0;
 
-	// For HybridModel 
-    void SumAllInternalConvectionGainsExceptPeople(int const ZoneNum,
-                                                   Real64 &SumConvGainRateExceptPeople){
-		Real64 tmpSumConvGainRateExceptPeople;
-		int DeviceNum;
-		std::string str_people = "PEOPLE";
-		tmpSumConvGainRateExceptPeople = 0.0;
+        if (ZoneIntGain(ZoneNum).NumberOfDevices == 0) {
+            SumConvGainRateExceptPeople = 0.0;
+            return;
+        }
 
-		if (ZoneIntGain(ZoneNum).NumberOfDevices == 0) {
-			SumConvGainRateExceptPeople = 0.0;
-			return;
-		}
+        for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
+            if (ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people) {
+                tmpSumConvGainRateExceptPeople += ZoneIntGain(ZoneNum).Device(DeviceNum).ConvectGainRate;
+            }
+        }
 
-		for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
-			if (ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people) {
-				tmpSumConvGainRateExceptPeople  += ZoneIntGain(ZoneNum).Device(DeviceNum).ConvectGainRate;
-			}
-		}
-
-		SumConvGainRateExceptPeople = tmpSumConvGainRateExceptPeople;
+        SumConvGainRateExceptPeople = tmpSumConvGainRateExceptPeople;
     }
 
     void SumInternalConvectionGainsByTypes(int const ZoneNum,             // zone index pointer for which zone to sum gains for
@@ -7363,10 +7362,10 @@ namespace InternalHeatGains {
     }
 
     // Added for hybrid model -- calculate the latent gain from all sources except for people
-	void SumAllInternalLatentGainsExceptPeople(int const ZoneNum, // zone index pointer for which zone to sum gains for
-		                                       Real64 &SumLatentGainRateExceptPeople) 
+    void SumAllInternalLatentGainsExceptPeople(int const ZoneNum, // zone index pointer for which zone to sum gains for
+                                               Real64 &SumLatentGainRateExceptPeople)
     {
-        
+
         Real64 tmpSumLatentGainRateExceptPeople;
         int DeviceNum;
         std::string str_people = "PEOPLE";
@@ -7378,7 +7377,7 @@ namespace InternalHeatGains {
         }
 
         for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
-            if(ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people){
+            if (ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people) {
                 tmpSumLatentGainRateExceptPeople += ZoneIntGain(ZoneNum).Device(DeviceNum).LatentGainRate;
             }
         }
@@ -7558,9 +7557,9 @@ namespace InternalHeatGains {
         SumCO2GainRate = tmpSumCO2GainRate;
     }
 
-     // Added for hybrid model -- function for calculating CO2 gains except people
+    // Added for hybrid model -- function for calculating CO2 gains except people
     void SumAllInternalCO2GainsExceptPeople(int const ZoneNum, // zone index pointer for which zone to sum gains for
-                                Real64 &SumCO2GainRateExceptPeople)
+                                            Real64 &SumCO2GainRateExceptPeople)
     {
 
         Real64 tmpSumCO2GainRateExceptPeople(0.0);
@@ -7569,17 +7568,17 @@ namespace InternalHeatGains {
         std::string str_people = "PEOPLE";
 
         if (ZoneIntGain(ZoneNum).NumberOfDevices == 0) {
-			SumCO2GainRateExceptPeople = 0.0;
+            SumCO2GainRateExceptPeople = 0.0;
             return;
         }
 
         for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
-            if(ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people){
+            if (ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType != str_people) {
                 tmpSumCO2GainRateExceptPeople += ZoneIntGain(ZoneNum).Device(DeviceNum).CarbonDioxideGainRate;
             }
         }
 
-		SumCO2GainRateExceptPeople = tmpSumCO2GainRateExceptPeople;
+        SumCO2GainRateExceptPeople = tmpSumCO2GainRateExceptPeople;
     }
 
     void SumInternalCO2GainsByTypes(int const ZoneNum,             // zone index pointer for which zone to sum gains for

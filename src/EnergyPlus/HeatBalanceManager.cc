@@ -5397,7 +5397,7 @@ namespace HeatBalanceManager {
         ZoneInfiltrationFlag.dimension(NumOfZones, false);
         ZoneReOrder = 0;
         ZoneLatentGain.dimension(NumOfZones, 0.0);
-        ZoneLatentGainExceptPeople.dimension(NumOfZones, 0.0);  // Added for hybrid model
+        ZoneLatentGainExceptPeople.dimension(NumOfZones, 0.0); // Added for hybrid model
         OAMFL.dimension(NumOfZones, 0.0);
         VAMFL.dimension(NumOfZones, 0.0);
         ZTAV.dimension(NumOfZones, 23.0);
