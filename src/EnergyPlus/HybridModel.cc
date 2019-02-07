@@ -212,12 +212,12 @@ namespace HybridModel {
                     // Scenario 1-1: To solve thermal mass
                     if (FlagHybridModel_TM) {
                         if (FlagHybridModel_AI) {
-                            ShowContinueError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(4) + "\" cannot be both set to YES.");
+                            ShowWarningError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(4) + "\" cannot be both set to YES.");
                             ShowContinueError("Field \"" + cAlphaFieldNames(4) + "\" is changed to NO for the hybrid modeling simulations.");
                         }
 
                         if (FlagHybridModel_PC) {
-                            ShowContinueError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
+                            ShowWarningError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
                             ShowContinueError("Field \"" + cAlphaFieldNames(5) + "\" is changed to NO for the hybrid modeling simulations.");
                         }
 
@@ -232,12 +232,14 @@ namespace HybridModel {
                     // Scenario 1-2: To solve infiltration rate
                     if (FlagHybridModel_AI) {
                         if (FlagHybridModel_PC) {
-                            ShowContinueError("Field \"" + cAlphaFieldNames(4) + "\" and \"" + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
+                            ShowWarningError("Field \"" + cAlphaFieldNames(4) + "\" and \"" + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
                             ShowContinueError("Field \"" + cAlphaFieldNames(5) + "\" is changed to NO for the hybrid modeling simulations.");
                         }
                         if (TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0 && CO2ConcentrationSchPtr == 0) {
                             // Show fatal error if no measurement schedule is provided
                             ShowSevereError("No measured envrionmental parameter is provided for: " + CurrentModuleObject);
+                            ShowContinueError("One of the field \"" + cAlphaFieldNames(6) + "\", \"" + cAlphaFieldNames(7) + "\", or " +
+                                              cAlphaFieldNames(8) + "\" must be provided for the HybridModel:Zone.");
                             ErrorsFound = true;
                         } else {
                             if (TemperatureSchPtr > 0 && !FlagHybridModel_TM) {
@@ -271,7 +273,10 @@ namespace HybridModel {
                     if (FlagHybridModel_PC) {
                         if (TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0 && CO2ConcentrationSchPtr == 0) {
                             // Show fatal error if no measurement schedule is provided
-                            ShowFatalError("No measured envrionmental parameter is provided for: " + CurrentModuleObject);
+                            ShowSevereError("No measured envrionmental parameter is provided for: " + CurrentModuleObject);
+                            ShowContinueError("One of the field \"" + cAlphaFieldNames(6) + "\", \"" + cAlphaFieldNames(7) + "\", or " +
+                                              cAlphaFieldNames(8) + "\" must be provided for the HybridModel:Zone.");
+                            ErrorsFound = true;
                         } else {
                             if (TemperatureSchPtr > 0 && !FlagHybridModel_TM) {
                                 // Temperature schedule is provided, igonore humidity ratio and CO2 concentration schedules.
@@ -289,8 +294,8 @@ namespace HybridModel {
                                 // Humidity ratio schedule is provided, ignore CO2 concentration schedule.
                                 HybridModelZone(ZonePtr).PeopelCountCalc_H = true;
                                 if (CO2ConcentrationSchPtr > 0) {
-                                    ShowWarningError(
-                                        "The meausured air CO2 concentration schedule will not be used since measured air temperature is provided.");
+                                    ShowWarningError("The meausured air CO2 concentration schedule will not be used since measured air humidity "
+                                                     "ratio is provided.");
                                 }
                             }
                             if (CO2ConcentrationSchPtr > 0 && TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0) {
