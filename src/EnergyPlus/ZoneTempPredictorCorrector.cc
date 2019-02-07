@@ -1830,7 +1830,7 @@ namespace ZoneTempPredictorCorrector {
                 } else {
                     // multiplier values for the specified zone(s)
                     int ZoneNum = 0;
-                    ZLItem = 0; // What is this? Used to find the zone number (index) from a list of zones
+                    ZLItem = 0;
                     Item1 = UtilityRoutines::FindItemInList(cAlphaArgs(2), Zone);
                     if (Item1 == 0 && NumOfZoneLists > 0) ZLItem = UtilityRoutines::FindItemInList(cAlphaArgs(2), ZoneList);
                     if (Item1 > 0) {
@@ -4989,7 +4989,6 @@ namespace ZoneTempPredictorCorrector {
             ManageAirModel(ZoneNum);
 
             // Calculate the various heat balance sums
-            // CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
             CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
 
             // Sum all convective internal gains except for people: SumIntGainExceptPeople
@@ -5757,8 +5756,8 @@ namespace ZoneTempPredictorCorrector {
         Real64 B;
         Real64 C;
         Real64 WZSat;
-        Real64 MoistureMassFlowRate; // Q: Is this the moisture mass flow rate from the system?
-        Real64 ZoneMassFlowRate;     // Q: Same with the one above
+        Real64 MoistureMassFlowRate;
+        Real64 ZoneMassFlowRate;
         Real64 SysTimeStepInSeconds;
         Real64 H2OHtOfVap;
         Real64 ZoneMult;
@@ -5835,7 +5834,6 @@ namespace ZoneTempPredictorCorrector {
         }
 
         // Calculate zone heat balance sums
-        // CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
         CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
 
         // Sum all convective internal gains except for people: SumIntGainExceptPeople
@@ -5920,7 +5918,6 @@ namespace ZoneTempPredictorCorrector {
             ZoneAirHumRatTemp(ZoneNum) = RoomAirflowNetworkZoneInfo(ZoneNum).Node(RoomAirflowNetworkZoneInfo(ZoneNum).ControlAirNodeID).HumRat;
         }
 
-        // Han_Li
         // HybridModel with measured humidity ratio begins
         if ((HybridModelZone(ZoneNum).InfiltrationCalc_H || HybridModelZone(ZoneNum).PeopelCountCalc_H) && (!WarmupFlag) && (!DoingSizing)) {
 

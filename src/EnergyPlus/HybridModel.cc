@@ -463,9 +463,13 @@ namespace HybridModel {
     // Needed for unit tests, should not be normally called.
     void clear_state()
     {
-
+        FlagHybridModel = false;
         FlagHybridModel_TM = false;
+        FlagHybridModel_AI = false;
+        FlagHybridModel_PC = false;
         NumOfHybridModelZones = 0;
+        CurrentModuleObject.clear();
+        HybridModelZone.deallocate();
     }
 
 } // namespace HybridModel

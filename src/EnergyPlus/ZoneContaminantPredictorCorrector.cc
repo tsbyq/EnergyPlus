@@ -2631,7 +2631,7 @@ namespace ZoneContaminantPredictorCorrector {
 
                 ZoneAirCO2(ZoneNum) = ZoneAirCO2Temp(ZoneNum);
 
-                // Hybrid modeling with CO2 concentration starts here, added by Han Li 2018
+                // Hybrid modeling with CO2 concentration starts here.
                 GetHybridModelZone();
                 if (HybridModelZone(ZoneNum).InfiltrationCalc_C || HybridModelZone(ZoneNum).PeopelCountCalc_C && (!WarmupFlag) && (!DoingSizing)) {
 
