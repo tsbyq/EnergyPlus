@@ -1419,6 +1419,7 @@ namespace InternalHeatGains {
                                         "Zone",
                                         "Sum",
                                         Lights(Loop).Name);
+
                     SetupOutputVariable("Lights Visible Radiation Heating Rate",
                                         OutputProcessor::Unit::W,
                                         Lights(Loop).VisGainRate,
@@ -3775,27 +3776,20 @@ namespace InternalHeatGains {
                     ErrorsFound = true;
                 }
 
-                if (!lAlphaFieldBlanks(15)) {
-                    ZoneITEq(Loop).RecircFLTCurve = GetCurveIndex(AlphaName(15));
-                    if (ZoneITEq(Loop).RecircFLTCurve == 0) {
-                        ShowSevereError(RoutineName + CurrentModuleObject + " \"" + AlphaName(1) + "\"");
-                        ShowContinueError("Invalid " + cAlphaFieldNames(15) + '=' + AlphaName(15));
-                        ErrorsFound = true;
-                    }
-                } else {
-                    ZoneITEq(Loop).RecircFLTCurve = 0;
+                ZoneITEq(Loop).RecircFLTCurve = GetCurveIndex(AlphaName(15));
+                if (ZoneITEq(Loop).RecircFLTCurve == 0) {
+                    ShowSevereError(RoutineName + CurrentModuleObject + " \"" + AlphaName(1) + "\"");
+                    ShowContinueError("Invalid " + cAlphaFieldNames(15) + '=' + AlphaName(15));
+                    ErrorsFound = true;
                 }
 
-                if (!lAlphaFieldBlanks(16)) {
-                    ZoneITEq(Loop).UPSEfficFPLRCurve = GetCurveIndex(AlphaName(16));
-                    if (ZoneITEq(Loop).UPSEfficFPLRCurve == 0) {
-                        ShowSevereError(RoutineName + CurrentModuleObject + " \"" + AlphaName(1) + "\"");
-                        ShowContinueError("Invalid " + cAlphaFieldNames(16) + '=' + AlphaName(16));
-                        ErrorsFound = true;
-                    }
-                } else {
-                    ZoneITEq(Loop).UPSEfficFPLRCurve = 0;
+                ZoneITEq(Loop).UPSEfficFPLRCurve = GetCurveIndex(AlphaName(16));
+                if (ZoneITEq(Loop).UPSEfficFPLRCurve == 0) {
+                    ShowSevereError(RoutineName + CurrentModuleObject + " \"" + AlphaName(1) + "\"");
+                    ShowContinueError("Invalid " + cAlphaFieldNames(16) + '=' + AlphaName(16));
+                    ErrorsFound = true;
                 }
+
                 // Environmental class
                 if (UtilityRoutines::SameString(AlphaName(10), "None")) {
                     ZoneITEq(Loop).Class = ITEClassNone;
@@ -7042,7 +7036,7 @@ namespace InternalHeatGains {
 
         // SUBROUTINE INFORMATION:
         //       AUTHOR         B. Griffith
-        //       DATE WRITTEN   Nov. 2011
+        //       DATE WRITTEN   Nov. 2011cl
         //       MODIFIED       na
         //       RE-ENGINEERED  na
 
@@ -7347,6 +7341,8 @@ namespace InternalHeatGains {
         Real64 tmpSumLatentGainRate;
         int DeviceNum;
 
+		std::string tt_str;
+
         tmpSumLatentGainRate = 0.0;
 
         if (ZoneIntGain(ZoneNum).NumberOfDevices == 0) {
@@ -7355,6 +7351,7 @@ namespace InternalHeatGains {
         }
 
         for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
+			tt_str = ZoneIntGain(ZoneNum).Device(DeviceNum).CompObjectType;
             tmpSumLatentGainRate += ZoneIntGain(ZoneNum).Device(DeviceNum).LatentGainRate;
         }
 
@@ -7577,7 +7574,6 @@ namespace InternalHeatGains {
                 tmpSumCO2GainRateExceptPeople += ZoneIntGain(ZoneNum).Device(DeviceNum).CarbonDioxideGainRate;
             }
         }
-
         SumCO2GainRateExceptPeople = tmpSumCO2GainRateExceptPeople;
     }
 
