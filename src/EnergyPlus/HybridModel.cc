@@ -212,13 +212,13 @@ namespace HybridModel {
                     // Scenario 1-1: To solve thermal mass
                     if (FlagHybridModel_TM) {
                         if (FlagHybridModel_AI) {
-                            ShowWarningError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(4) + "\" cannot be both set to YES.");
-                            ShowContinueError("Field \"" + cAlphaFieldNames(4) + "\" is changed to NO for the hybrid modeling simulations.");
+                            ShowSevereError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(4) + "\" cannot be both set to YES.");
+                            ErrorsFound = true;
                         }
 
                         if (FlagHybridModel_PC) {
-                            ShowWarningError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
-                            ShowContinueError("Field \"" + cAlphaFieldNames(5) + "\" is changed to NO for the hybrid modeling simulations.");
+                            ShowSevereError("Field \"" + cAlphaFieldNames(3) + " and " + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
+                            ErrorsFound = true;
                         }
 
                         if (TemperatureSchPtr == 0) {
@@ -232,8 +232,8 @@ namespace HybridModel {
                     // Scenario 1-2: To solve infiltration rate
                     if (FlagHybridModel_AI) {
                         if (FlagHybridModel_PC) {
-                            ShowWarningError("Field \"" + cAlphaFieldNames(4) + "\" and \"" + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
-                            ShowContinueError("Field \"" + cAlphaFieldNames(5) + "\" is changed to NO for the hybrid modeling simulations.");
+                            ShowSevereError("Field \"" + cAlphaFieldNames(4) + "\" and \"" + cAlphaFieldNames(5) + "\" cannot be both set to YES.");
+                            ErrorsFound = true;
                         }
                         if (TemperatureSchPtr == 0 && HumidityRatioSchPtr == 0 && CO2ConcentrationSchPtr == 0) {
                             // Show fatal error if no measurement schedule is provided
