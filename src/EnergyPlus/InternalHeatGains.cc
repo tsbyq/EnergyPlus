@@ -80,6 +80,7 @@
 #include <FuelCellElectricGenerator.hh>
 #include <General.hh>
 #include <HeatBalanceInternalHeatGains.hh>
+#include <HybridModel.hh>
 #include <InputProcessing/InputProcessor.hh>
 #include <InternalHeatGains.hh>
 #include <MicroCHPElectricGenerator.hh>
@@ -5999,7 +6000,10 @@ namespace InternalHeatGains {
             SumAllInternalRadiationGains(NZ, QL(NZ));
 
             SumAllInternalLatentGains(NZ, ZoneLatentGain(NZ));
-            SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ)); // Added for hybrid model
+            // Added for hybrid model
+			if (HybridModel::FlagHybridModel_PC) {
+				SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ));
+			}
         }
 
         SumConvHTRadSys = 0.0;
@@ -6943,7 +6947,9 @@ namespace InternalHeatGains {
             if (ReSumLatentGains) {
                 SumAllInternalLatentGains(NZ, ZoneLatentGain(NZ));
                 // Added for the hybrid model
-                SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ));
+				if (HybridModel::FlagHybridModel_PC) {
+					SumAllInternalLatentGainsExceptPeople(NZ, ZoneLatentGainExceptPeople(NZ));
+				}
             }
         }
 
@@ -6994,12 +7000,11 @@ namespace InternalHeatGains {
         int DeviceNum;
 
         tmpSumConvGainRate = 0.0;
-
         if (ZoneIntGain(ZoneNum).NumberOfDevices == 0) {
             SumConvGainRate = 0.0;
             return;
         }
-
+		
         for (DeviceNum = 1; DeviceNum <= ZoneIntGain(ZoneNum).NumberOfDevices; ++DeviceNum) {
             tmpSumConvGainRate += ZoneIntGain(ZoneNum).Device(DeviceNum).ConvectGainRate;
         }

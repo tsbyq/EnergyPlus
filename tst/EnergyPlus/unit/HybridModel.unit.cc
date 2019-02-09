@@ -226,19 +226,19 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
 
     // Case 1: Hybrid model internal thermal mass
 
-    //HybridModelZone(1).InfiltrationCalc_T = false;
-    //HybridModelZone(1).InternalThermalMassCalc_T = true;
-    //HybridModelZone(1).HybridStartDayOfYear = 1;
-    //HybridModelZone(1).HybridEndDayOfYear = 2;
-    //MAT(1) = 0.0;
-    //PreviousMeasuredZT1(1) = 0.1;
-    //PreviousMeasuredZT2(1) = 0.2;
-    //PreviousMeasuredZT3(1) = 0.3;
-    //Zone(1).OutDryBulbTemp = -5.21;
-    //ZoneAirHumRat(1) = 0.002083;
-    //MCPV(1) = 1414.60;   // Assign TempDepCoef
-    //MCPTV(1) = -3335.10; // Assign TempIndCoef
-    //OutBaroPress = 99166.67;
+    HybridModelZone(1).InfiltrationCalc_T = false;
+    HybridModelZone(1).InternalThermalMassCalc_T = true;
+    HybridModelZone(1).HybridStartDayOfYear = 1;
+    HybridModelZone(1).HybridEndDayOfYear = 2;
+    MAT(1) = 0.0;
+    PreviousMeasuredZT1(1) = 0.1;
+    PreviousMeasuredZT2(1) = 0.2;
+    PreviousMeasuredZT3(1) = 0.3;
+    Zone(1).OutDryBulbTemp = -5.21;
+    ZoneAirHumRat(1) = 0.002083;
+    MCPV(1) = 1414.60;   // Assign TempDepCoef
+    MCPTV(1) = -3335.10; // Assign TempIndCoef
+    OutBaroPress = 99166.67;
 
     //CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
     //EXPECT_NEAR(15.13, Zone(1).ZoneVolCapMultpSensHM, 0.01);
