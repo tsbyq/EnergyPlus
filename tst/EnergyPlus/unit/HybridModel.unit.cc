@@ -240,8 +240,8 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
     MCPTV(1) = -3335.10; // Assign TempIndCoef
     OutBaroPress = 99166.67;
 
-    //CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
-    //EXPECT_NEAR(15.13, Zone(1).ZoneVolCapMultpSensHM, 0.01);
+    CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
+    EXPECT_NEAR(15.13, Zone(1).ZoneVolCapMultpSensHM, 0.01);
 
     // Case 2: Hybrid model infiltration
 
