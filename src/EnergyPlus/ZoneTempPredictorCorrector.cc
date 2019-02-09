@@ -5847,7 +5847,7 @@ namespace ZoneTempPredictorCorrector {
         // Calculate hourly humidity ratio from infiltration + humdidity added from latent load + system added moisture
         LatentGain = ZoneLatentGain(ZoneNum) + SumLatentHTRadSys(ZoneNum) + SumLatentPool(ZoneNum);
 
-        if (HybridModel::FlagHybridModel_PC) {
+        if (HybridModelZone(ZoneNum).PeopelCountCalc_H) {
             LatentGainExceptPeople = ZoneLatentGainExceptPeople(ZoneNum) + SumLatentHTRadSys(ZoneNum) + SumLatentPool(ZoneNum);
         }
 
