@@ -396,7 +396,8 @@ namespace HybridModel {
                     }
 
                     // Output variable
-                    if (Flag_AirInfiltrationCalc) {
+                    if (HybridModelZone(ZonePtr).InfiltrationCalc_T || HybridModelZone(ZonePtr).InfiltrationCalc_H ||
+                        HybridModelZone(ZonePtr).InfiltrationCalc_C) {
                         SetupOutputVariable("Zone Infiltration Hybrid Model Air Change Rate",
                                             OutputProcessor::Unit::ach,
                                             Zone(ZonePtr).InfilOAAirChangeRateHM,
@@ -410,7 +411,8 @@ namespace HybridModel {
                                             "Average",
                                             Zone(ZonePtr).Name);
                     }
-                    if (Flag_PeopleCountCalc) {
+                    if (HybridModelZone(ZonePtr).PeopelCountCalc_T || HybridModelZone(ZonePtr).PeopelCountCalc_H ||
+                        HybridModelZone(ZonePtr).PeopelCountCalc_C) {
                         SetupOutputVariable("Zone Hybrid Model People Count",
                                             OutputProcessor::Unit::None,
                                             Zone(ZonePtr).NumOccHM,
