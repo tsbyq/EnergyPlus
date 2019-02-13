@@ -4985,14 +4985,6 @@ namespace ZoneTempPredictorCorrector {
 
             ManageAirModel(ZoneNum);
 
-            Real64 tt_Zone_Volume = Zone(ZoneNum).Volume;
-            Real64 tt_Zone_ZoneVolCapMultpSens = Zone(ZoneNum).ZoneVolCapMultpSens;
-            Real64 tt_OutBaroPress = OutBaroPress;
-            Real64 tt_MAT = MAT(ZoneNum);
-            Real64 tt_ZoneAirHumRat = ZoneAirHumRat(ZoneNum);
-            Real64 tt_TimeStepSys = TimeStepSys;
-            Real64 tt_SecInHour = SecInHour;
-
             // Calculate the various heat balance sums
             CalcZoneSums(ZoneNum, SumIntGain, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
 
@@ -5344,13 +5336,6 @@ namespace ZoneTempPredictorCorrector {
                             AA = SumHA + SumMCp;
                             BB = SumIntGainExceptPeople + SumHATsurf - SumHATref + SumMCpT;
                         }
-
-                        Real64 tt_SumHA = SumHA;
-                        Real64 tt_SumMCp = SumMCp;
-                        Real64 tt_SumIntGainExceptPeople = SumIntGainExceptPeople;
-                        Real64 tt_SumHATsurf = SumHATsurf;
-                        Real64 tt_SumHATref = SumHATref;
-                        Real64 tt_SumMCpT = SumMCpT;
 
                         CC = AirCap;
                         DD = (3.0 * PreviousMeasuredZT1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredZT2(ZoneNum) +
