@@ -402,25 +402,13 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
     Zone(1).OutDryBulbTemp = -6.71;
     ZoneAirHumRat(1) = 0.0024964;
     OutBaroPress = 98916.7;
-
-    Real64 SumHA(0.0);
-    Real64 SumMCp(0.0);
-    Real64 SumHATsurf(0.0);
-    Real64 SumHATref(0.0);
-    Real64 SumMCpT(0.0);
-
-    SumHA = 999;
-    SumMCp = 999;
-    SumHATsurf = 999;
-    SumHATref = 999;
-    SumMCpT = 999;
-
-
+    MCPV(1) = 5163.5;    // Assign TempDepCoef
+    MCPTV(1) = -15956.8; // Assign TempIndCoef
     HybridModelZone(1).ZoneMeasuredTemperatureSchedulePtr = 1;
     Schedule(HybridModelZone(1).ZoneMeasuredTemperatureSchedulePtr).CurrentValue = -2.923892218;
 
     CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
-    EXPECT_NEAR(4, Zone(1).NumOccHM, 0.1);
+    EXPECT_NEAR(0, Zone(1).NumOccHM, 0.1); // Need to initialize SumIntGain
 
     // Case 6: Hybrid model people count with measured humidity ratio
 
@@ -439,7 +427,7 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
     ZoneAirHumRat(1) = 0.0024964;
     ZT(1) = -2.92;
     OutHumRat = 0.0025365002784602363;
-	OutBaroPress = 98916.7;
+    OutBaroPress = 98916.7;
     OAMFL(1) = 0.700812;
     ZoneLatentGain(1) = 211.2;
     ZoneLatentGainExceptPeople(1) = 0.0;
@@ -448,11 +436,12 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
     PreviousMeasuredHumRat3(1) = 0.002480404;
     HybridModelZone(1).ZoneMeasuredHumidityRatioSchedulePtr = 1;
     Schedule(HybridModelZone(1).ZoneMeasuredHumidityRatioSchedulePtr).CurrentValue = 0.002506251487737;
-    
+
     CorrectZoneHumRat(1);
     EXPECT_NEAR(4, Zone(1).NumOccHM, 0.1);
 
     // Case 7: Hybrid model people count with measured CO2 concentration
+
     Contaminant.CO2Simulation = true;
     HybridModelZone(1).InternalThermalMassCalc_T = false;
     HybridModelZone(1).InfiltrationCalc_T = false;
