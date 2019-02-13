@@ -101,7 +101,7 @@ using namespace EnergyPlus::DataRoomAirModel;
 using namespace EnergyPlus::HybridModel;
 using namespace EnergyPlus::DataPrecisionGlobals;
 
-TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
+TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
 {
 
     // ZoneTempPredictorCorrector variable initialization
@@ -551,6 +551,263 @@ TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
     ZoneW1.deallocate();
     ZoneAirHumRatTemp.deallocate();
     SumLatentPool.deallocate();
+    OAMFL.deallocate();
+    VAMFL.deallocate();
+    EAMFL.deallocate();
+    EAMFLxHumRat.deallocate();
+    CTMFL.deallocate();
+    ZoneAirCO2.deallocate();
+    ZoneAirCO2Temp.deallocate();
+    ZoneAirDensityCO.deallocate();
+    ZoneCO2Gain.deallocate();
+    ZoneCO2GainExceptPeople.deallocate();
+    ZoneGCGain.deallocate();
+    MixingMassFlowCO2.deallocate();
+    Schedule.deallocate();
+}
+
+TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneContaminantsTest)
+{
+
+    // ZoneContaminantPredictorCorrector variable initialization
+    Zone.allocate(1);
+    HybridModelZone.allocate(1);
+    AirModel.allocate(1);
+    ZTOC.allocate(1);
+    AIRRAT.allocate(1);
+    ZoneAirHumRat.allocate(1);
+    NonAirSystemResponse.allocate(1);
+    NonAirSystemResponse(1) = 0.0;
+    SysDepZoneLoadsLagged.allocate(1);
+    SysDepZoneLoadsLagged(1) = 0.0;
+    AirflowNetwork::AirflowNetworkExchangeData.allocate(1);
+    Node.allocate(1);
+    TempTstatAir.allocate(1);
+    LoadCorrectionFactor.allocate(1);
+    MAT.allocate(1);
+    ZT.allocate(1);
+    PreviousMeasuredZT1.allocate(1);
+    PreviousMeasuredZT2.allocate(1);
+    PreviousMeasuredZT3.allocate(1);
+    CO2ZoneTimeMinus1Temp.allocate(1);
+    CO2ZoneTimeMinus2Temp.allocate(1);
+    CO2ZoneTimeMinus3Temp.allocate(1);
+    CO2ZoneTimeMinus1.allocate(1);
+    CO2ZoneTimeMinus2.allocate(1);
+    CO2ZoneTimeMinus3.allocate(1);
+    Schedule.allocate(1);
+
+    // CalcZoneComponentLoadSums variable initialization
+    MCPI.allocate(1);
+    MCPI(1) = 0.0;
+    MCPV.allocate(1);
+    MCPM.allocate(1);
+    MCPM(1) = 0.0;
+    MCPE.allocate(1);
+    MCPE(1) = 0.0;
+    MCPC.allocate(1);
+    MCPC(1) = 0.0;
+    MDotCPOA.allocate(1);
+    MDotCPOA(1) = 0.0;
+    MDotOA.allocate(1);
+    MDotOA(1) = 0.0;
+    MCPTI.allocate(1);
+    MCPTI(1) = 0.0;
+    MCPTV.allocate(1);
+    MCPTM.allocate(1);
+    MCPTM(1) = 0.0;
+    MCPTE.allocate(1);
+    MCPTE(1) = 0.0;
+    MCPTC.allocate(1);
+    MCPTC(1) = 0.0;
+    SurfaceWindow.allocate(1);
+    Surface.allocate(2);
+    HConvIn.allocate(1);
+    ZoneAirRelHum.allocate(1);
+    IsZoneDV.dimension(1, false);
+    IsZoneCV.dimension(1, false);
+    IsZoneUI.dimension(1, false);
+    ZoneDVMixedFlag.allocate(1);
+    ZnAirRpt.allocate(1);
+    ZoneEquipConfig.allocate(1);
+    ZoneEquipConfig(1).ActualZoneNum = 1;
+    ZoneEqSizing.allocate(1);
+
+    // CorrectZoneContaminants variable initialization
+    MixingMassFlowZone.allocate(1);
+    MixingMassFlowZone(1) = 0.0;
+    ZoneW1.allocate(1);
+    ZoneAirHumRatTemp.allocate(1);
+    OAMFL.allocate(1);
+    OAMFL(1) = 0.0;
+    VAMFL.allocate(1);
+    VAMFL(1) = 0.0;
+    EAMFL.allocate(1);
+    EAMFL(1) = 0.0;
+    EAMFLxHumRat.allocate(1);
+    EAMFLxHumRat(1) = 0.0;
+    CTMFL.allocate(1);
+    CTMFL(1) = 0.0;
+    ZT.allocate(1);
+    ZT(1) = 0.0;
+    AZ.allocate(1);
+    BZ.allocate(1);
+    CZ.allocate(1);
+    AZGC.allocate(1);
+    BZGC.allocate(1);
+    CZGC.allocate(1);
+    AZ(1) = 0.0;
+    BZ(1) = 0.0;
+    CZ(1) = 0.0;
+    AZGC(1) = 0.0;
+    BZGC(1) = 0.0;
+    CZGC(1) = 0.0;
+    ZoneAirCO2.allocate(1);
+    ZoneAirCO2(1) = 0.0;
+    ZoneAirCO2Temp.allocate(1);
+    ZoneAirCO2Temp(1) = 0.0;
+    ZoneAirDensityCO.allocate(1);
+    ZoneAirDensityCO(1) = 0.0;
+    ZoneCO2Gain.allocate(1);
+    ZoneCO2Gain(1) = 0.0;
+    ZoneCO2GainExceptPeople.allocate(1);
+    ZoneCO2GainExceptPeople(1) = 0.0;
+    ZoneGCGain.allocate(1);
+    ZoneGCGain(1) = 0.0;
+    MixingMassFlowCO2.allocate(1);
+    MixingMassFlowCO2(1) = 0.0;
+    Real64 CO2MassFlowRate(0.0);
+
+    // Parameter setup
+    NumOfZones = 1;
+    CurZoneEqNum = 1;
+    NumZoneReturnPlenums = 0;
+    NumZoneSupplyPlenums = 0;
+    AirflowNetwork::SimulateAirflowNetwork = 0;
+    Zone(1).IsControlled = true;
+    Zone(1).ZoneEqNum = 1;
+    Zone(1).Multiplier = 1;
+    Zone(1).SystemZoneNodeNumber = 1;
+    Zone(1).SurfaceFirst = 1;
+    Zone(1).SurfaceLast = 2;
+    Zone(1).Volume = 4000;
+    TimeStepZone = 10.0 / 60.0; // Zone timestep in hours
+    TimeStepSys = 10.0 / 60.0;
+    Real64 ZoneTempChange;
+
+    // Hybrid modeling trigger
+    FlagHybridModel_TM = false;
+    WarmupFlag = false;
+    DoingSizing = false;
+    DayOfYear = 1;
+
+    // Case 1: Hybrid model infiltration with measured CO2 concentration (free-floating)
+
+    Contaminant.CO2Simulation = true;
+    HybridModelZone(1).InternalThermalMassCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_H = false;
+    HybridModelZone(1).InfiltrationCalc_C = true;
+    HybridModelZone(1).PeopelCountCalc_T = false;
+    HybridModelZone(1).PeopelCountCalc_H = false;
+    HybridModelZone(1).PeopelCountCalc_C = false;
+    HybridModelZone(1).HybridStartDayOfYear = 1;
+    HybridModelZone(1).HybridEndDayOfYear = 2;
+    Zone(1).ZoneVolCapMultpCO2 = 1.0;
+    ZoneAirHumRat(1) = 0.001120003;
+    OutdoorCO2 = 387.6064554;
+    OutHumRat = 0.001147;
+    OutBaroPress = 99500;
+    CO2ZoneTimeMinus1(1) = 388.595225;
+    CO2ZoneTimeMinus2(1) = 389.084601;
+    CO2ZoneTimeMinus3(1) = 388.997009;
+    HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr = 1;
+    Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 388.238646;
+
+    CorrectZoneContaminants(false, true, 10 / 60);
+    EXPECT_NEAR(0.4965, Zone(1).InfilOAAirChangeRateHM, 0.01);
+
+    // Case 2: Hybrid model people count with measured CO2 concentration (free-floating)
+
+    Contaminant.CO2Simulation = true;
+    HybridModelZone(1).InternalThermalMassCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_H = false;
+    HybridModelZone(1).InfiltrationCalc_C = false;
+    HybridModelZone(1).PeopelCountCalc_T = false;
+    HybridModelZone(1).PeopelCountCalc_H = false;
+    HybridModelZone(1).PeopelCountCalc_C = true;
+    HybridModelZone(1).HybridStartDayOfYear = 1;
+    HybridModelZone(1).HybridEndDayOfYear = 2;
+    Zone(1).Volume = 4000;
+    Zone(1).ZoneVolCapMultpCO2 = 1.0;
+    Zone(1).OutDryBulbTemp = -1.0394166434012677;
+    ZT(1) = -2.92;
+    ZoneAirHumRat(1) = 0.00112;
+    OutdoorCO2 = 387.6064554;
+    OutBaroPress = 98916.7;
+    OAMFL(1) = 0.700812;
+    Real64 CO2GainExceptPeople(0.0);
+    ZoneCO2Gain(1) = 0.00001989;
+    CO2ZoneTimeMinus1(1) = 387.9962885;
+    CO2ZoneTimeMinus2(1) = 387.676037;
+    CO2ZoneTimeMinus3(1) = 387.2385685;
+    HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr = 1;
+    Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 389.8511796;
+
+    CorrectZoneContaminants(false, true, 10 / 60);
+    EXPECT_NEAR(4, Zone(1).NumOccHM, 0.1);
+
+    // Deallocate everything
+    Zone.deallocate();
+    HybridModelZone.deallocate();
+    AirModel.deallocate();
+    ZTOC.deallocate();
+    CO2ZoneTimeMinus1Temp.deallocate();
+    CO2ZoneTimeMinus2Temp.deallocate();
+    CO2ZoneTimeMinus3Temp.deallocate();
+    CO2ZoneTimeMinus1.deallocate();
+    CO2ZoneTimeMinus2.deallocate();
+    CO2ZoneTimeMinus3.deallocate();
+    AIRRAT.deallocate();
+    ZoneAirHumRat.deallocate();
+    NonAirSystemResponse.deallocate();
+    SysDepZoneLoadsLagged.deallocate();
+    AirflowNetwork::AirflowNetworkExchangeData.deallocate();
+    Node.deallocate();
+    TempTstatAir.deallocate();
+    LoadCorrectionFactor.deallocate();
+    MAT.deallocate();
+    ZT.deallocate();
+    PreviousMeasuredZT1.deallocate();
+    PreviousMeasuredZT2.deallocate();
+    PreviousMeasuredZT3.deallocate();
+    MCPI.deallocate();
+    MCPV.deallocate();
+    MCPM.deallocate();
+    MCPE.deallocate();
+    MCPC.deallocate();
+    MDotCPOA.deallocate();
+    MDotOA.deallocate();
+    MCPTI.deallocate();
+    MCPTV.deallocate();
+    MCPTM.deallocate();
+    MCPTE.deallocate();
+    MCPTC.deallocate();
+    SurfaceWindow.deallocate();
+    Surface.deallocate();
+    HConvIn.deallocate();
+    ZoneAirRelHum.deallocate();
+    IsZoneDV.deallocate();
+    IsZoneCV.deallocate();
+    IsZoneUI.deallocate();
+    ZoneDVMixedFlag.deallocate();
+    ZnAirRpt.deallocate();
+    ZoneEquipConfig.deallocate();
+    ZoneEqSizing.deallocate();
+    MixingMassFlowZone.deallocate();
+    ZoneW1.deallocate();
+    ZoneAirHumRatTemp.deallocate();
     OAMFL.deallocate();
     VAMFL.deallocate();
     EAMFL.deallocate();
