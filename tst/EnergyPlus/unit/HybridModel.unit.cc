@@ -399,20 +399,36 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
 
     // Case 6: Hybrid model infiltration with measured temperature (with HVAC)
 
-    // HybridModelZone(1).ZoneMeasuredHumidityRatioSchedulePtr = 1;
-    // HybridModelZone(1).ZoneSupplyAirTemperatureSchedulePtr = 2;
-    // HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr = 3;
-    // HybridModelZone(1).ZonePeopleActivityLevelSchedulePtr = 4;
-    // HybridModelZone(1).ZonePeopleSensibleFractionSchedulePtr = 5;
-    // HybridModelZone(1).ZonePeopleRadiationFractionSchedulePtr = 6;
-    // HybridModelZone(1).ZoneSupplyAirCO2ConcentrationSchedulePtr = 7;
-    // Schedule(HybridModelZone(1).ZoneMeasuredHumidityRatioSchedulePtr).CurrentValue = 0.001120003;
-    // Schedule(HybridModelZone(1).ZoneSupplyAirTemperatureSchedulePtr).CurrentValue = 99999;
-    // Schedule(HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr).CurrentValue = 99999;
-    // Schedule(HybridModelZone(1).ZonePeopleActivityLevelSchedulePtr).CurrentValue = 99999;
-    // Schedule(HybridModelZone(1).ZonePeopleSensibleFractionSchedulePtr).CurrentValue = 99999;
-    // Schedule(HybridModelZone(1).ZonePeopleRadiationFractionSchedulePtr).CurrentValue = 99999;
-    // Schedule(HybridModelZone(1).ZoneSupplyAirCO2ConcentrationSchedulePtr).CurrentValue = 99999;
+    HybridModelZone(1).InternalThermalMassCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_T = true;
+    HybridModelZone(1).InfiltrationCalc_H = false;
+    HybridModelZone(1).InfiltrationCalc_C = false;
+    HybridModelZone(1).PeopelCountCalc_T = false;
+    HybridModelZone(1).PeopelCountCalc_H = false;
+    HybridModelZone(1).PeopelCountCalc_C = false;
+    HybridModelZone(1).IncludeSystemSupplyParameters = true;
+    HybridModelZone(1).HybridStartDayOfYear = 1;
+    HybridModelZone(1).HybridEndDayOfYear = 2;
+    MAT(1) = 15.56;
+    PreviousMeasuredZT1(1) = 15.56;
+    PreviousMeasuredZT2(1) = 15.56;
+    PreviousMeasuredZT3(1) = 15.56;
+    Zone(1).ZoneVolCapMultpSens = 1.0;
+    Zone(1).OutDryBulbTemp = -10.62;
+    ZoneAirHumRat(1) = 0.0077647;
+    MCPV(1) = 4456;   // Assign TempDepCoef
+    MCPTV(1) = 60650; // Assign TempIndCoef
+    OutBaroPress = 99500;
+    OutHumRat = 0.00113669;
+    HybridModelZone(1).ZoneMeasuredTemperatureSchedulePtr = 1;
+    HybridModelZone(1).ZoneSupplyAirTemperatureSchedulePtr = 2;
+    HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr = 3;
+    Schedule(HybridModelZone(1).ZoneMeasuredTemperatureSchedulePtr).CurrentValue = 15.56;
+    Schedule(HybridModelZone(1).ZoneSupplyAirTemperatureSchedulePtr).CurrentValue = 50;
+    Schedule(HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr).CurrentValue = 0.7974274;
+
+    CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
+    EXPECT_NEAR(0.49, Zone(1).InfilOAAirChangeRateHM, 0.01);
 
     // Case 7: Hybrid model infiltration with measured humidity ratio (with HVAC)
 
@@ -447,6 +463,42 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     EXPECT_NEAR(0.5, Zone(1).InfilOAAirChangeRateHM, 0.01);
 
     // Case 8: Hybrid model people count with measured temperature (with HVAC)
+
+    HybridModelZone(1).InternalThermalMassCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_H = false;
+    HybridModelZone(1).InfiltrationCalc_C = false;
+    HybridModelZone(1).PeopelCountCalc_T = true;
+    HybridModelZone(1).PeopelCountCalc_H = false;
+    HybridModelZone(1).PeopelCountCalc_C = false;
+    HybridModelZone(1).IncludeSystemSupplyParameters = true;
+    HybridModelZone(1).HybridStartDayOfYear = 1;
+    HybridModelZone(1).HybridEndDayOfYear = 2;
+    MAT(1) = -2.89;
+    PreviousMeasuredZT1(1) = 21.11;
+    PreviousMeasuredZT2(1) = 21.11;
+    PreviousMeasuredZT3(1) = 21.11;
+    Zone(1).ZoneVolCapMultpSens = 1.0;
+    Zone(1).OutDryBulbTemp = -6.71;
+    ZoneAirHumRat(1) = 0.0024964;
+    OutBaroPress = 98916.7;
+    MCPV(1) = 6616;    // Assign TempDepCoef
+    MCPTV(1) = 138483.2; // Assign TempIndCoef
+    HybridModelZone(1).ZoneMeasuredTemperatureSchedulePtr = 1;
+    HybridModelZone(1).ZoneSupplyAirTemperatureSchedulePtr = 2;
+    HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr = 3;
+    HybridModelZone(1).ZonePeopleActivityLevelSchedulePtr = 4;
+    HybridModelZone(1).ZonePeopleSensibleFractionSchedulePtr = 5;
+    HybridModelZone(1).ZonePeopleRadiationFractionSchedulePtr = 6;
+    Schedule(HybridModelZone(1).ZoneMeasuredTemperatureSchedulePtr).CurrentValue = 21.11;
+    Schedule(HybridModelZone(1).ZoneSupplyAirTemperatureSchedulePtr).CurrentValue = 50;
+    Schedule(HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr).CurrentValue = 1.446145794;
+    Schedule(HybridModelZone(1).ZonePeopleActivityLevelSchedulePtr).CurrentValue = 120;
+    Schedule(HybridModelZone(1).ZonePeopleSensibleFractionSchedulePtr).CurrentValue = 0.6;
+    Schedule(HybridModelZone(1).ZonePeopleRadiationFractionSchedulePtr).CurrentValue = 0.3;
+
+    CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
+    //EXPECT_NEAR(0, Zone(1).NumOccHM, 0.1); // Need to initialize SumIntGain
 
     // Case 9: Hybrid model people count with measured humidity ratio (with HVAC)
     HybridModelZone(1).InternalThermalMassCalc_T = false;
