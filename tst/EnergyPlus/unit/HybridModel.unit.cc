@@ -357,33 +357,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     CorrectZoneHumRat(1);
     EXPECT_NEAR(0.5, Zone(1).InfilOAAirChangeRateHM, 0.01);
 
-    // Case 4: Hybrid model infiltration with measured CO2 concentration
-
-    Contaminant.CO2Simulation = true;
-    HybridModelZone(1).InternalThermalMassCalc_T = false;
-    HybridModelZone(1).InfiltrationCalc_T = false;
-    HybridModelZone(1).InfiltrationCalc_H = false;
-    HybridModelZone(1).InfiltrationCalc_C = true;
-    HybridModelZone(1).PeopelCountCalc_T = false;
-    HybridModelZone(1).PeopelCountCalc_H = false;
-    HybridModelZone(1).PeopelCountCalc_C = false;
-    HybridModelZone(1).HybridStartDayOfYear = 1;
-    HybridModelZone(1).HybridEndDayOfYear = 2;
-    Zone(1).Volume = 4000;
-    Zone(1).ZoneVolCapMultpCO2 = 1.0;
-    OutdoorCO2 = 387.6064554;
-    OutHumRat = 0.001147;
-    OutBaroPress = 99500;
-    CO2ZoneTimeMinus1(1) = 388.595225;
-    CO2ZoneTimeMinus2(1) = 389.084601;
-    CO2ZoneTimeMinus3(1) = 388.997009;
-    HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr = 1;
-    Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 388.238646;
-
-    CorrectZoneContaminants(false, true, 10 / 60);
-    EXPECT_NEAR(0.4965, Zone(1).InfilOAAirChangeRateHM, 0.01);
-
-    // Case 5: Hybrid model people count with measured temperature
+    // Case 4: Hybrid model people count with measured temperature
 
     HybridModelZone(1).InternalThermalMassCalc_T = false;
     HybridModelZone(1).InfiltrationCalc_T = false;
@@ -410,7 +384,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
     EXPECT_NEAR(0, Zone(1).NumOccHM, 0.1); // Need to initialize SumIntGain
 
-    // Case 6: Hybrid model people count with measured humidity ratio
+    // Case 5: Hybrid model people count with measured humidity ratio
 
     HybridModelZone(1).InternalThermalMassCalc_T = false;
     HybridModelZone(1).InfiltrationCalc_T = false;
@@ -427,7 +401,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     ZoneAirHumRat(1) = 0.0024964;
     ZT(1) = -2.92;
     OutHumRat = 0.0025365002784602363;
-    OutBaroPress = 98916.7;
+	OutBaroPress = 98916.7;
     OAMFL(1) = 0.700812;
     ZoneLatentGain(1) = 211.2;
     ZoneLatentGainExceptPeople(1) = 0.0;
@@ -440,36 +414,6 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     CorrectZoneHumRat(1);
     EXPECT_NEAR(4, Zone(1).NumOccHM, 0.1);
 
-    // Case 7: Hybrid model people count with measured CO2 concentration
-
-    Contaminant.CO2Simulation = true;
-    HybridModelZone(1).InternalThermalMassCalc_T = false;
-    HybridModelZone(1).InfiltrationCalc_T = false;
-    HybridModelZone(1).InfiltrationCalc_H = false;
-    HybridModelZone(1).InfiltrationCalc_C = false;
-    HybridModelZone(1).PeopelCountCalc_T = false;
-    HybridModelZone(1).PeopelCountCalc_H = false;
-    HybridModelZone(1).PeopelCountCalc_C = true;
-    HybridModelZone(1).HybridStartDayOfYear = 1;
-    HybridModelZone(1).HybridEndDayOfYear = 2;
-    Zone(1).Volume = 4000;
-    Zone(1).ZoneVolCapMultpCO2 = 1.0;
-    Zone(1).OutDryBulbTemp = -1.0394166434012677;
-    ZT(1) = -2.92;
-    ZoneAirHumRat(1) = 0.00112;
-    OutdoorCO2 = 387.6064554;
-    OutBaroPress = 98916.7;
-    OAMFL(1) = 0.700812;
-    Real64 CO2GainExceptPeople(0.0);
-    ZoneCO2Gain(1) = 0.00001989;
-    CO2ZoneTimeMinus1(1) = 387.9962885;
-    CO2ZoneTimeMinus2(1) = 387.676037;
-    CO2ZoneTimeMinus3(1) = 387.2385685;
-    HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr = 1;
-    Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 389.8511796;
-
-    CorrectZoneContaminants(false, true, 10 / 60);
-    EXPECT_NEAR(4, Zone(1).NumOccHM, 0.1);
 
     // Deallocate everything
     Zone.deallocate();
