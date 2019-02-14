@@ -141,7 +141,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     PreviousMeasuredHumRat1.allocate(1);
     PreviousMeasuredHumRat2.allocate(1);
     PreviousMeasuredHumRat3.allocate(1);
-    Schedule.allocate(7);
+    Schedule.allocate(6);
 
     // CalcZoneComponentLoadSums variable initialization
     MCPI.allocate(1);
@@ -598,7 +598,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneContaminantsTest)
     CO2ZoneTimeMinus1.allocate(1);
     CO2ZoneTimeMinus2.allocate(1);
     CO2ZoneTimeMinus3.allocate(1);
-    Schedule.allocate(1);
+    Schedule.allocate(7);
 
     // CalcZoneComponentLoadSums variable initialization
     MCPI.allocate(1);
@@ -728,7 +728,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneContaminantsTest)
     Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 388.238646;
 
     CorrectZoneContaminants(false, true, 10 / 60);
-    EXPECT_NEAR(0.4965, Zone(1).InfilOAAirChangeRateHM, 0.01);
+    EXPECT_NEAR(0.5, Zone(1).InfilOAAirChangeRateHM, 0.01);
 
     // Case 2: Hybrid model people count with measured CO2 concentration (free-floating)
 
@@ -757,13 +757,79 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneContaminantsTest)
     CO2ZoneTimeMinus3(1) = 387.2385685;
     HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr = 1;
     Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 389.8511796;
-
     CorrectZoneContaminants(false, true, 10 / 60);
     EXPECT_NEAR(4, Zone(1).NumOccHM, 0.1);
 
     // Case 3: Hybrid model infiltration with measured CO2 concentration (with HVAC)
+    Contaminant.CO2Simulation = true;
+    HybridModelZone(1).InternalThermalMassCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_H = false;
+    HybridModelZone(1).InfiltrationCalc_C = true;
+    HybridModelZone(1).PeopelCountCalc_T = false;
+    HybridModelZone(1).PeopelCountCalc_H = false;
+    HybridModelZone(1).PeopelCountCalc_C = false;
+    HybridModelZone(1).IncludeSystemSupplyParameters = true;
+    HybridModelZone(1).HybridStartDayOfYear = 1;
+    HybridModelZone(1).HybridEndDayOfYear = 2;
+    Zone(1).ZoneVolCapMultpCO2 = 1.0;
+    ZT(1) = 15.56;
+    ZoneAirHumRat(1) = 0.00809;
+    Zone(1).OutDryBulbTemp = -10.7;
+    OutBaroPress = 99500;
+    ZoneCO2Gain(1) = 0.0;
+    CO2ZoneTimeMinus1(1) = 388.54049;
+    CO2ZoneTimeMinus2(1) = 389.0198771;
+    CO2ZoneTimeMinus3(1) = 388.9201464;
+    HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr = 1;
+    HybridModelZone(1).ZoneSupplyAirCO2ConcentrationSchedulePtr = 2;
+    HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr = 3;
+    Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 388.2075472;
+    Schedule(HybridModelZone(1).ZoneSupplyAirCO2ConcentrationSchedulePtr).CurrentValue = 388.54049;
+    Schedule(HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr).CurrentValue = 0.898375186;
+
+    CorrectZoneContaminants(false, true, 10 / 60);
+    EXPECT_NEAR(0.5, Zone(1).InfilOAAirChangeRateHM, 0.01);
 
     // Case 4: Hybrid model people count with measured CO2 concentration (with HVAC)
+
+    Contaminant.CO2Simulation = true;
+    HybridModelZone(1).InternalThermalMassCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_T = false;
+    HybridModelZone(1).InfiltrationCalc_H = false;
+    HybridModelZone(1).InfiltrationCalc_C = false;
+    HybridModelZone(1).PeopelCountCalc_T = false;
+    HybridModelZone(1).PeopelCountCalc_H = false;
+    HybridModelZone(1).PeopelCountCalc_C = true;
+    HybridModelZone(1).IncludeSystemSupplyParameters = true;
+    HybridModelZone(1).HybridStartDayOfYear = 1;
+    HybridModelZone(1).HybridEndDayOfYear = 2;
+    Zone(1).ZoneVolCapMultpCO2 = 1.0;
+    ZT(1) = 21.1;
+    ZoneAirHumRat(1) = 0.01102;
+    OutBaroPress = 98933.3;
+    ZoneCO2Gain(1) = 0.00003333814;
+    ZoneCO2GainExceptPeople(1) = 0.0;
+    CO2ZoneTimeMinus1(1) = 387.2253194;
+    CO2ZoneTimeMinus2(1) = 387.1898423;
+    CO2ZoneTimeMinus3(1) = 387.4064128;
+    HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr = 1;
+    HybridModelZone(1).ZoneSupplyAirCO2ConcentrationSchedulePtr = 2;
+    HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr = 3;
+    HybridModelZone(1).ZonePeopleActivityLevelSchedulePtr = 4;
+    HybridModelZone(1).ZonePeopleSensibleFractionSchedulePtr = 5;
+    HybridModelZone(1).ZonePeopleRadiationFractionSchedulePtr = 6;
+    HybridModelZone(1).ZonePeopleCO2GenRateSchedulePtr = 7;
+    Schedule(HybridModelZone(1).ZoneMeasuredCO2ConcentrationSchedulePtr).CurrentValue = 389.795807;
+    Schedule(HybridModelZone(1).ZoneSupplyAirCO2ConcentrationSchedulePtr).CurrentValue = 387.2253194;
+    Schedule(HybridModelZone(1).ZoneSupplyAirMassFlowRateSchedulePtr).CurrentValue = 1.427583795;
+    Schedule(HybridModelZone(1).ZonePeopleActivityLevelSchedulePtr).CurrentValue = 120;
+    Schedule(HybridModelZone(1).ZonePeopleSensibleFractionSchedulePtr).CurrentValue = 0.6;
+    Schedule(HybridModelZone(1).ZonePeopleRadiationFractionSchedulePtr).CurrentValue = 0.3;
+    Schedule(HybridModelZone(1).ZonePeopleCO2GenRateSchedulePtr).CurrentValue = 0.0000000382;
+
+    CorrectZoneContaminants(false, true, 10 / 60);
+    EXPECT_NEAR(7.27, Zone(1).NumOccHM, 0.1);
 
     // Deallocate everything
     Zone.deallocate();
