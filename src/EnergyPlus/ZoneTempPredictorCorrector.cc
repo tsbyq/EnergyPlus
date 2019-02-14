@@ -5975,6 +5975,32 @@ namespace ZoneTempPredictorCorrector {
                     DD = (3.0 * PreviousMeasuredHumRat1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredHumRat2(ZoneNum) +
                           (1.0 / 3.0) * PreviousMeasuredHumRat3(ZoneNum));
 
+                    Real64 tt_a_SumSysM_HM = SumSysM_HM;
+
+                    Real64 tt_a_VAMFL = VAMFL(ZoneNum);
+                    Real64 tt_a_EAMFL = EAMFL(ZoneNum);
+                    Real64 tt_a_CTMFL = CTMFL(ZoneNum);
+                    Real64 tt_a_SumHmARa = SumHmARa(ZoneNum);
+                    Real64 tt_a_MixingMassFlowZone = MixingMassFlowZone(ZoneNum);
+                    Real64 tt_a_MDotOA = MDotOA(ZoneNum);
+
+                    Real64 tt_b_SumSysMHumRat_HM = SumSysMHumRat_HM;
+
+                    Real64 tt_b_LatentGain = LatentGain;
+                    Real64 tt_b_H2OHtOfVap = H2OHtOfVap;
+                    Real64 tt_b_VAMFL = VAMFL(ZoneNum);
+                    Real64 tt_b_CTMFL = CTMFL(ZoneNum);
+                    Real64 tt_b_OutHumRat = OutHumRat;
+                    Real64 tt_b_EAMFLxHumRat = EAMFLxHumRat(ZoneNum);
+                    Real64 tt_b_SumHmARaW = SumHmARaW(ZoneNum);
+                    Real64 tt_b_MixingMassFlowXHumRat = MixingMassFlowXHumRat(ZoneNum);
+                    Real64 tt_b_MDotOA = MDotOA(ZoneNum);
+
+                    Real64 tt_c_RhoAir = RhoAir;
+                    Real64 tt_c_Zone_Volume = Zone(ZoneNum).Volume;
+                    Real64 tt_c_Zone_ZoneVolCapMultpMoist = Zone(ZoneNum).ZoneVolCapMultpMoist;
+                    Real64 tt_c_SysTimeStepInSeconds = SysTimeStepInSeconds;
+
                     zone_M_HR = Zone(ZoneNum).ZoneMeasuredHumidityRatio;
                     delta_HR = (Zone(ZoneNum).ZoneMeasuredHumidityRatio - OutHumRat);
 
