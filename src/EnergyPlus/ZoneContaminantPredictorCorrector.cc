@@ -82,7 +82,6 @@
 #include <ZoneTempPredictorCorrector.hh>
 
 namespace EnergyPlus {
-
 namespace ZoneContaminantPredictorCorrector {
 
     // MODULE INFORMATION:
@@ -1789,7 +1788,7 @@ namespace ZoneContaminantPredictorCorrector {
         bool ControlledGCZoneFlag; // This determines whether this is a generic contaminant controlled zone or not
         Real64 ZoneAirGCSetPoint;  // Zone generic contaminant setpoint
         Real64 GCGain;             // Zone generic contaminant internal load
-        //  REAL(r64) :: Temp                      ! Zone generic contaminant internal load
+                                   //  REAL(r64) :: Temp                      ! Zone generic contaminant internal load
 
         // FLOW:
 
@@ -2666,7 +2665,7 @@ namespace ZoneContaminantPredictorCorrector {
                     }
                     ZoneMassFlowRate += Node(ZoneRetPlenCond(ZoneRetPlenumNum).InletNode(NodeNum)).MassFlowRate / ZoneMult;
                 } // NodeNum
-                // add in the leak flow
+                  // add in the leak flow
                 for (ADUListIndex = 1; ADUListIndex <= ZoneRetPlenCond(ZoneRetPlenumNum).NumADUs; ++ADUListIndex) {
                     ADUNum = ZoneRetPlenCond(ZoneRetPlenumNum).ADUIndex(ADUListIndex);
                     if (AirDistUnit(ADUNum).UpStreamLeak) {
@@ -2777,12 +2776,10 @@ namespace ZoneContaminantPredictorCorrector {
                 ZoneAirCO2(ZoneNum) = ZoneAirCO2Temp(ZoneNum);
 
                 if (HybridModel::FlagHybridModel) {
-                    if ((HybridModelZone(ZoneNum).InfiltrationCalc_C || HybridModelZone(ZoneNum).PeopleCountCalc_C) && (!WarmupFlag) && (!DoingSizing)) {
-                        Zone(ZoneNum).ZoneMeasuredCO2Concentration =
-                            GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredCO2ConcentrationSchedulePtr);
-
-                if ((HybridModelZone(ZoneNum).InfiltrationCalc_C || HybridModelZone(ZoneNum).PeopleCountCalc_C) && (!WarmupFlag) && (!DoingSizing)) {
-					InverseModelCO2(ZoneNum, CO2Gain, CO2GainExceptPeople, ZoneMassFlowRate, CO2MassFlowRate, RhoAir);
+                    if ((HybridModelZone(ZoneNum).InfiltrationCalc_C || HybridModelZone(ZoneNum).PeopleCountCalc_C) && (!WarmupFlag) &&
+                        (!DoingSizing)) {
+                        InverseModelCO2(ZoneNum, CO2Gain, CO2GainExceptPeople, ZoneMassFlowRate, CO2MassFlowRate, RhoAir);
+                    }
                 }
                 // Now put the calculated info into the actual zone nodes; ONLY if there is zone air flow, i.e. controlled zone or plenum zone
                 ZoneNodeNum = Zone(ZoneNum).SystemZoneNodeNumber;
