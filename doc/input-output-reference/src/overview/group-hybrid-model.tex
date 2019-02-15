@@ -2,7 +2,9 @@
 
 This object provides a hybrid model feature to enhance energy simulations for existing buildings by inversely solving hard-to-measure model input parameters. More specifically, zone internal thermal mass, air infiltration rate (ACH), and people count are usually hard to be measured directly yet important in building energy simulations. The hybrid model takes measured zone air temperature, humidity ratio, or CO$_2$ concentration as inputs and inversely solve those unknown parameters based on the zone air heat, moisture, or CO$_2$ balance algorithms. The inversely solved internal thermal mass, air infiltration rate, and people count can then be used to substitute the original simplified assumptions to enhance the energy simulation.
 
-\subsection{HybridModel:Zone}\label{inputs-hm}
+\subsection{HybridModel:Zone}\label{HybridModel}
+
+\subsubsection{Inputs}\label{inputs-hm}
 
 \paragraph{Field: Name}\label{field-name-hm}
 
@@ -15,12 +17,12 @@ This field is the name of the thermal zone (ref: Zone) and attaches a particular
 \paragraph{Field: Calculate Zone Internal Thermal Mass}\label{field-calculate-zon-internal-thermal-mass-hm}
 
 This field is used to provide an option to calculate the temperature capacity multiplier (Ref: ZoneCapacitanceMultiplier:ResearchSpecial). The temperature capacity multiplier is represented as internal thermal mass multiplier in the hybrid model.
-When YES is selected, the hybrid model calculates the multiplier based on the inverse heat balance algorithm using the measured zone air temperature.
+The default selection is NO. When NO is selected, the hybrid model calculation of the zone internal thermal mass will not be activated. When YES is selected, the hybrid model calculates the multiplier based on the inverse heat balance algorithm using the measured zone air temperature.
 
 \paragraph{Field: Calculate Zone Air Infiltration Rate}\label{field-calculate-zone-air-infiltration-rate-hm}
 
 This field is used to provide an option to calculate the zone air infiltration rate - air change per hour (ACH).
-When YES is selected, the hybrid model calculates the zone air infiltration rate based on one of the following balance equations: 1. Heat balance equations, 2. Moisture balance equations, 3. CO$_2$ balance equations when the corresponding data requirements are met. The HybridModel will be activated with the following options:
+The default selection is NO. When NO is selected, the hybrid model calculation of the zone air infiltration rate will not be activated. When YES is selected, the hybrid model calculates the zone air infiltration rate based on one of the following balance equations: 1. Heat balance equations, 2. Moisture balance equations, 3. CO$_2$ balance equations when the corresponding data requirements are met. The HybridModel will be activated with the following options:
 
 1. When Zone Measured Air Temperature Schedule Name is provided, it will calculate the zone air infiltration rate assuming the HVAC system is free-floating using the zone sensible heat balance algorithms;
 
@@ -39,15 +41,15 @@ When YES is selected for Calculate Zone Internal Thermal Mass, this field will b
 \paragraph{Field: Calculate Zone People Count}\label{field-calculate-zone-people-count-rate-hm}
 
 This field is used to provide an option to calculate the zone people count.
-When YES is selected, the hybrid model calculates the zone people count based on one of the following balance equations: 1. heat balance equations, 2. Moisture balance equations, 3. CO$_2$ balance equations when the corresponding data requirements are met. The HybridModel will be activated with the following options:
+The default selection is NO. When NO is selected, the hybrid model calculation of the zone people count will not be activated. When YES is selected, the hybrid model calculates the zone people count based on one of the following balance equations: 1. heat balance equations, 2. Moisture balance equations, 3. CO$_2$ balance equations when the corresponding data requirements are met. The HybridModel will be activated with the following options:
 
-1. When Zone Measured Air Temperature Schedule Name is provided, it will calculate the zone people count assuming the HVAC system is free-floating using the zone sensible heat balance algorithms. The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.7. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
+1. When Zone Measured Air Temperature Schedule Name is provided, it will calculate the zone people count assuming the HVAC system is free-floating using the zone sensible heat balance algorithms. The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.3. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
 
-2. When Zone Measured Air Temperature Schedule Name, Zone Input Supply Air Mass Flow Rate Schedule Name, and Zone Input Supply Air Temperature Schedule Name are provided, it will calculate the zone people count assuming the HVAC is on. In this case, the zone air supply air temperature and mass flow rate in the zone sensible heat balance algorithms will be overwritten by the input data.The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.7. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
+2. When Zone Measured Air Temperature Schedule Name, Zone Input Supply Air Mass Flow Rate Schedule Name, and Zone Input Supply Air Temperature Schedule Name are provided, it will calculate the zone people count assuming the HVAC is on. In this case, the zone air supply air temperature and mass flow rate in the zone sensible heat balance algorithms will be overwritten by the input data.The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.3. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
 
-3. When Zone Measured Air Humidity Ratio Schedule Name is provided, it will calculate the zone people count assuming the HVAC system is free-floating using the zone moisture balance algorithms.The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.7. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
+3. When Zone Measured Air Humidity Ratio Schedule Name is provided, it will calculate the zone people count assuming the HVAC system is free-floating using the zone moisture balance algorithms.The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.3. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
 
-4. When Zone Measured Air Humidity Ratio Schedule Name, Zone Input Supply Air Mass Flow Rate Schedule Name, and Zone Input Supply Air Humidity Ratio Schedule Name are provided, it will calculate the zone people count assuming the HVAC is on. In this case, the zone air supply air humidity ratio and mass flow rate in the zone moisture balance algorithms will be overwritten by the input data.The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.7. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
+4. When Zone Measured Air Humidity Ratio Schedule Name, Zone Input Supply Air Mass Flow Rate Schedule Name, and Zone Input Supply Air Humidity Ratio Schedule Name are provided, it will calculate the zone people count assuming the HVAC is on. In this case, the zone air supply air humidity ratio and mass flow rate in the zone moisture balance algorithms will be overwritten by the input data.The default people activity level is 130 W. The default sensible heat fraction is 0.6.The default radiant heat fraction is 0.3. Zone Input People Activity Level Schedule Name, Zone Input People Sensible Heat Fraction Schedule Name, and Zone Input People Radiant Heat Fraction Schedule Name are optional. When provided, the default values will be overwritten.
 
 5. When Zone Measured Air CO$_2$ concentration Schedule Name is provided, it will calculate the zone people count assuming the HVAC system is free-floating using the zone CO$_2$ balance algorithms. The default people activity level is 130 W. The default single person CO$_2$ generation is 0.0000000382 [m$^3$/(s*W)]. Zone Input People Activity Level Schedule Name, Zone Input People CO$_2$ Generation Rate Schedule Name are optional. When provided, the default values will be overwritten.
 
@@ -69,19 +71,19 @@ This field is the name of the schedule object which contains the zone air CO$_2$
 
 \paragraph{Field: Zone Input People Activity Level Schedule Name}\label{field-zone-input-people-activity-schedule-name-hm}
 
-This field is the name of the schedule referenced by a Schedule object which contains the people activity level data. The date range of the schedule should cover the start and end date of the HybridModel.
+This field is the name of the schedule referenced by a Schedule object which contains the people activity level data. When provided and valid, the default value of the people activity level (130 W) will be overwritten in the inverse calculation of people count. The date range of the schedule should cover the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input People Sensible Heat Fraction Schedule Name}\label{field-zone-input-people-sensible-heat-fraction-schedule-name-hm}
 
-This field is the name of the schedule referenced by a Schedule object which contains the people sensible heat fraction data. The date range of the schedule should cover the start and end date of the HybridModel.
+This field is the name of the schedule referenced by a Schedule object which contains the people sensible heat fraction data. When provided and valid, the default value of the people sensible heat portion (0.6) will be overwritten in the inverse calculation of people count. The date range of the schedule should cover the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input People Radiant Heat Fraction Schedule Name}\label{field-zone-input-people-radiant-heat-fraction-schedule-name-hm}
 
-This field is the name of the schedule referenced by a Schedule object which contains the radiant heat fraction of the sensible heat data. The date range of the schedule should cover the start and end date of the HybridModel.
+This field is the name of the schedule referenced by a Schedule object which contains the radiant heat fraction of the sensible heat data. When provided and valid, the default value of the radiant portion of the sensible heat from people (0.3) will be overwritten in the inverse calculation of people count. The date range of the schedule should cover the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input People CO$_2$ Generation Rate Schedule Name}\label{field-zone-input-people-co2-generation-rate-schedule-name-hm}
 
-This field is the name of the schedule referenced by a Schedule object which contains a single person's CO$_2$ generation rate data. The date range of the schedule should cover the start and end date of the HybridModel.
+This field is the name of the schedule referenced by a Schedule object which contains a single person's CO$_2$ generation rate data. When provided and valid, the default value of the people CO2 generation rate (0.0000000382 [m3/(s*W)]) will be overwritten in the inverse calculation of people count. The date range of the schedule should cover the start and end date of the HybridModel.
 
 \paragraph{Field: Zone Input Supply Air Temperature Schedule Name}\label{field-zone-input-supply-air-temperature-schedule-name-hm}
 
@@ -190,7 +192,7 @@ Examples of the object in an IDF are:
 \end{lstlisting}
 
 
-\subsection{Outputs}\label{outputs-030}
+\subsubsection{Outputs}\label{outputs-hm}
 
 \begin{lstlisting}
 Zone,Average,Zone Infiltration Hybrid Model Air Change Rate [ACH]
