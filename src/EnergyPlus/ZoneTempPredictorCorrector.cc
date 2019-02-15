@@ -5131,8 +5131,7 @@ namespace ZoneTempPredictorCorrector {
                 SNLoad = 0.0;
             }
 
-            // Hybrid modeling start: Added by Sang Hoon Lee May 2015, updated by Han Li 2018
-
+            // Inverse modeling
             if ((HybridModelZone(ZoneNum).InfiltrationCalc_T || HybridModelZone(ZoneNum).InternalThermalMassCalc_T ||
                  HybridModelZone(ZoneNum).PeopleCountCalc_T) &&
                 (!WarmupFlag) && (!DoingSizing)) {
@@ -5554,26 +5553,6 @@ namespace ZoneTempPredictorCorrector {
         static Real64 SumSysMCp(0.0);  // Zone sum of air system MassFlowRate*Cp
         static Real64 SumSysMCpT(0.0); // Zone sum of air system MassFlowRate*Cp*T
 
-        // hybrid mdoel
-        Real64 AA(0.0);
-        Real64 BB(0.0);
-        Real64 CC(0.0);
-        Real64 DD(0.0);
-        Real64 SumSysM_HM(0.0);
-        Real64 SumSysMHumRat_HM(0.0);
-        Real64 LatentGainPeople(0.0);
-        Real64 NumPeople(0.0);
-        Real64 FractionSensible(0.0);
-        Real64 ActivityLevel(0.0);
-        Real64 UpperBound(0.0);
-        Real64 zone_M_HR(0.0);
-        Real64 delta_HR(0.0);
-        Real64 AirDensity(0.0);
-        Real64 CpAir(0.0);
-        Real64 M_inf(0.0);
-        Real64 ACH_inf(0.0);
-        static Real64 SumIntGainExceptPeople(0.0); // Zone sum of convective internal gains
-
         // FLOW:
         MoistureMassFlowRate = 0.0;
         ZoneMassFlowRate = 0.0;
@@ -5718,122 +5697,7 @@ namespace ZoneTempPredictorCorrector {
 
         // HybridModel with measured humidity ratio begins
         if ((HybridModelZone(ZoneNum).InfiltrationCalc_H || HybridModelZone(ZoneNum).PeopleCountCalc_H) && (!WarmupFlag) && (!DoingSizing)) {
-
-            // Get measured zone humidity ratio
-            Zone(ZoneNum).ZoneMeasuredHumidityRatio = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredHumidityRatioSchedulePtr);
-
-            if (DayOfYear >= HybridModelZone(ZoneNum).HybridStartDayOfYear && DayOfYear <= HybridModelZone(ZoneNum).HybridEndDayOfYear) {
-
-                ZoneAirHumRat(ZoneNum) = Zone(ZoneNum).ZoneMeasuredHumidityRatio;
-
-                // Hybrid Model calculate air infiltration rate
-                if (HybridModelZone(ZoneNum).InfiltrationCalc_H && UseZoneTimeStepHistory) {
-
-                    // Conditionally calculate the time dependent and time independent terms
-                    if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
-
-                        Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
-                            GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
-                        Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
-                            GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
-
-                        SumSysM_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate;
-                        SumSysMHumRat_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio;
-
-                        AA = SumSysM_HM + VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) + MixingMassFlowZone(ZoneNum) +
-                             MDotOA(ZoneNum);
-                        BB = SumSysMHumRat_HM + (LatentGain / H2OHtOfVap) + ((VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) + EAMFLxHumRat(ZoneNum) +
-                             SumHmARaW(ZoneNum) + MixingMassFlowXHumRat(ZoneNum) + MDotOA(ZoneNum) * OutHumRat;
-                    } else {
-                        AA = VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) + MixingMassFlowZone(ZoneNum) + MDotOA(ZoneNum);
-                        BB = (LatentGain / H2OHtOfVap) + ((VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) + EAMFLxHumRat(ZoneNum) +
-                             SumHmARaW(ZoneNum) + MixingMassFlowXHumRat(ZoneNum) + MDotOA(ZoneNum) * OutHumRat;
-                    }
-
-                    CC = RhoAir * Zone(ZoneNum).Volume * Zone(ZoneNum).ZoneVolCapMultpMoist / SysTimeStepInSeconds;
-                    DD = (3.0 * PreviousMeasuredHumRat1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredHumRat2(ZoneNum) +
-                          (1.0 / 3.0) * PreviousMeasuredHumRat3(ZoneNum));
-
-                    zone_M_HR = Zone(ZoneNum).ZoneMeasuredHumidityRatio;
-                    delta_HR = (Zone(ZoneNum).ZoneMeasuredHumidityRatio - OutHumRat);
-
-                    CpAir = PsyCpAirFnWTdb(OutHumRat, Zone(ZoneNum).OutDryBulbTemp);
-                    AirDensity = PsyRhoAirFnPbTdbW(OutBaroPress, Zone(ZoneNum).OutDryBulbTemp, OutHumRat, RoutineName);
-
-                    if (abs(Zone(ZoneNum).ZoneMeasuredHumidityRatio - OutHumRat) < 0.0000001) {
-                        M_inf = 0.0;
-                    } else {
-                        M_inf = (CC * DD + BB - ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredHumidityRatio) / delta_HR;
-                    }
-
-                    // Add threshold for air change rate
-                    ACH_inf = max(0.0, min(10.0, (M_inf / AirDensity) / Zone(ZoneNum).Volume * SecInHour));
-                    M_inf = (ACH_inf / SecInHour) * Zone(ZoneNum).Volume * AirDensity;
-                    Zone(ZoneNum).MCPIHM = M_inf;
-                    Zone(ZoneNum).InfilOAAirChangeRateHM = ACH_inf;
-                }
-
-                // Hybrid Model calculate people count
-                if (HybridModelZone(ZoneNum).PeopleCountCalc_H && UseZoneTimeStepHistory) {
-                    Zone(ZoneNum).ZonePeopleActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
-                    Zone(ZoneNum).ZonePeopleSensibleHeatFraction =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleSensibleFractionSchedulePtr);
-                    Zone(ZoneNum).ZonePeopleRadiantHeatFraction =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleRadiationFractionSchedulePtr);
-
-                    FractionSensible = Zone(ZoneNum).ZonePeopleSensibleHeatFraction;
-
-                    if (FractionSensible <= 0.0) {
-                        FractionSensible = 0.6;
-                    }
-
-                    if (ActivityLevel <= 0.0) {
-                        ActivityLevel = 130.0;
-                    }
-
-                    // Conditionally calculate the humidity-dependent and humidity-independent terms.
-                    if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
-
-                        Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
-                            GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
-                        Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
-                            GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
-
-                        SumSysM_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate;
-                        SumSysMHumRat_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio;
-
-                        AA = SumSysM_HM + OAMFL(ZoneNum) + VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) +
-                             MixingMassFlowZone(ZoneNum) + MDotOA(ZoneNum);
-                        BB = SumSysMHumRat_HM + (LatentGainExceptPeople / H2OHtOfVap) +
-                             ((OAMFL(ZoneNum) + VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) + EAMFLxHumRat(ZoneNum) + SumHmARaW(ZoneNum) +
-                             MixingMassFlowXHumRat(ZoneNum) + MDotOA(ZoneNum) * OutHumRat;
-                    } else {
-                        AA = ZoneMassFlowRate + OAMFL(ZoneNum) + VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) +
-                             MixingMassFlowZone(ZoneNum) + MDotOA(ZoneNum);
-                        BB = (LatentGainExceptPeople / H2OHtOfVap) + ((OAMFL(ZoneNum) + VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) +
-                             EAMFLxHumRat(ZoneNum) + (MoistureMassFlowRate) + SumHmARaW(ZoneNum) + MixingMassFlowXHumRat(ZoneNum) +
-                             MDotOA(ZoneNum) * OutHumRat;
-                    }
-
-                    CC = RhoAir * Zone(ZoneNum).Volume * Zone(ZoneNum).ZoneVolCapMultpMoist / SysTimeStepInSeconds;
-                    DD = (3.0 * PreviousMeasuredHumRat1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredHumRat2(ZoneNum) +
-                          (1.0 / 3.0) * PreviousMeasuredHumRat3(ZoneNum));
-
-                    LatentGainPeople = (((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredHumidityRatio - BB - CC * DD) * H2OHtOfVap;
-                    UpperBound = max(0.0, LatentGain / (ActivityLevel * (1.0 - FractionSensible)));
-                    NumPeople = min(UpperBound, max(0.0, LatentGainPeople / (ActivityLevel * (1.0 - FractionSensible))));
-                    NumPeople = floor(NumPeople * 100.00 + 0.5) / 100.00;
-                    if (NumPeople < 0.05) {
-                        NumPeople = 0;
-                    }
-                    Zone(ZoneNum).NumOccHM = NumPeople;
-                }
-            }
-
-            // Update zone humidity ratio in the previous steps
-            PreviousMeasuredHumRat3(ZoneNum) = PreviousMeasuredHumRat2(ZoneNum);
-            PreviousMeasuredHumRat2(ZoneNum) = PreviousMeasuredHumRat1(ZoneNum);
-            PreviousMeasuredHumRat1(ZoneNum) = Zone(ZoneNum).ZoneMeasuredHumidityRatio;
+			InverseModelHumidity(ZoneNum, LatentGain, LatentGainExceptPeople, ZoneMassFlowRate, MoistureMassFlowRate, H2OHtOfVap, RhoAir);
         }
 
         // Now put the calculated info into the actual zone nodes; ONLY if there is zone air flow, i.e. controlled zone or plenum zone
@@ -6180,6 +6044,166 @@ namespace ZoneTempPredictorCorrector {
         PreviousMeasuredZT3(ZoneNum) = PreviousMeasuredZT2(ZoneNum);
         PreviousMeasuredZT2(ZoneNum) = PreviousMeasuredZT1(ZoneNum);
         PreviousMeasuredZT1(ZoneNum) = ZT(ZoneNum);
+    }
+
+    void InverseModelHumidity(int const ZoneNum,              // Zone number
+                              Real64 &LatentGain,             // Zone sum of latent gain
+                              Real64 &LatentGainExceptPeople, // Zone sum of latent gain except for people
+                              Real64 &ZoneMassFlowRate,       // Zone air mass flow rate
+                              Real64 &MoistureMassFlowRate,   // Zone moisture mass flow rate
+                              Real64 &H2OHtOfVap,             // Heat of vaporization of air
+                              Real64 &RhoAir                  // Air density
+    )
+    {
+        // SUBROUTINE INFORMATION:
+        //       AUTHOR         Han Li
+        //       DATE WRITTEN   February 2019
+        //       MODIFIED
+        //       RE-ENGINEERED
+
+        // PURPOSE OF THIS SUBROUTINE:
+        // This subroutine inversely solve infiltration airflow rate or people count with zone air humidity measurements.
+
+        // Using/Aliasing
+        using DataEnvironment::DayOfYear;
+
+        // SUBROUTINE PARAMETER DEFINITIONS:
+        static std::string const RoutineName("InverseModelHumidity");
+
+        // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+        Real64 AA(0.0);
+        Real64 BB(0.0);
+        Real64 CC(0.0);
+        Real64 DD(0.0);
+        Real64 SumSysM_HM(0.0);
+        Real64 SumSysMHumRat_HM(0.0);
+        Real64 LatentGainPeople(0.0);
+        Real64 NumPeople(0.0);
+        Real64 FractionSensible(0.0);
+        Real64 ActivityLevel(0.0);
+        Real64 UpperBound(0.0);
+        Real64 zone_M_HR(0.0);
+        Real64 delta_HR(0.0);
+        Real64 AirDensity(0.0);
+        Real64 CpAir(0.0);
+        Real64 M_inf(0.0);
+        Real64 ACH_inf(0.0);
+        Real64 SysTimeStepInSeconds(0.0);
+        SysTimeStepInSeconds = SecInHour * TimeStepSys;
+
+        static Real64 SumIntGainExceptPeople(0.0); // Zone sum of convective internal gains
+
+        // Get measured zone humidity ratio
+        Zone(ZoneNum).ZoneMeasuredHumidityRatio = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredHumidityRatioSchedulePtr);
+
+        if (DayOfYear >= HybridModelZone(ZoneNum).HybridStartDayOfYear && DayOfYear <= HybridModelZone(ZoneNum).HybridEndDayOfYear) {
+            ZoneAirHumRat(ZoneNum) = Zone(ZoneNum).ZoneMeasuredHumidityRatio;
+
+            // Hybrid Model calculate air infiltration rate
+            if (HybridModelZone(ZoneNum).InfiltrationCalc_H && UseZoneTimeStepHistory) {
+                // Conditionally calculate the time dependent and time independent terms
+                if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
+
+                    SumSysM_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate;
+                    SumSysMHumRat_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio;
+
+                    AA = SumSysM_HM + VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) + MixingMassFlowZone(ZoneNum) +
+                         MDotOA(ZoneNum);
+                    BB = SumSysMHumRat_HM + (LatentGain / H2OHtOfVap) + ((VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) + EAMFLxHumRat(ZoneNum) +
+                         SumHmARaW(ZoneNum) + MixingMassFlowXHumRat(ZoneNum) + MDotOA(ZoneNum) * OutHumRat;
+                } else {
+                    AA = VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) + MixingMassFlowZone(ZoneNum) + MDotOA(ZoneNum);
+                    BB = (LatentGain / H2OHtOfVap) + ((VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) + EAMFLxHumRat(ZoneNum) + SumHmARaW(ZoneNum) +
+                         MixingMassFlowXHumRat(ZoneNum) + MDotOA(ZoneNum) * OutHumRat;
+                }
+
+                CC = RhoAir * Zone(ZoneNum).Volume * Zone(ZoneNum).ZoneVolCapMultpMoist / SysTimeStepInSeconds;
+                DD = (3.0 * PreviousMeasuredHumRat1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredHumRat2(ZoneNum) +
+                      (1.0 / 3.0) * PreviousMeasuredHumRat3(ZoneNum));
+
+                zone_M_HR = Zone(ZoneNum).ZoneMeasuredHumidityRatio;
+                delta_HR = (Zone(ZoneNum).ZoneMeasuredHumidityRatio - OutHumRat);
+
+                CpAir = PsyCpAirFnWTdb(OutHumRat, Zone(ZoneNum).OutDryBulbTemp);
+                AirDensity = PsyRhoAirFnPbTdbW(OutBaroPress, Zone(ZoneNum).OutDryBulbTemp, OutHumRat, RoutineName);
+
+                if (abs(Zone(ZoneNum).ZoneMeasuredHumidityRatio - OutHumRat) < 0.0000001) {
+                    M_inf = 0.0;
+                } else {
+                    M_inf = (CC * DD + BB - ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredHumidityRatio) / delta_HR;
+                }
+
+                // Add threshold for air change rate
+                ACH_inf = max(0.0, min(10.0, (M_inf / AirDensity) / Zone(ZoneNum).Volume * SecInHour));
+                M_inf = (ACH_inf / SecInHour) * Zone(ZoneNum).Volume * AirDensity;
+                Zone(ZoneNum).MCPIHM = M_inf;
+                Zone(ZoneNum).InfilOAAirChangeRateHM = ACH_inf;
+            }
+
+            // Hybrid Model calculate people count
+            if (HybridModelZone(ZoneNum).PeopleCountCalc_H && UseZoneTimeStepHistory) {
+                Zone(ZoneNum).ZonePeopleActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
+                Zone(ZoneNum).ZonePeopleSensibleHeatFraction =
+                    GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleSensibleFractionSchedulePtr);
+                Zone(ZoneNum).ZonePeopleRadiantHeatFraction =
+                    GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleRadiationFractionSchedulePtr);
+
+                FractionSensible = Zone(ZoneNum).ZonePeopleSensibleHeatFraction;
+
+                if (FractionSensible <= 0.0) {
+                    FractionSensible = 0.6;
+                }
+
+                if (ActivityLevel <= 0.0) {
+                    ActivityLevel = 130.0;
+                }
+
+                // Conditionally calculate the humidity-dependent and humidity-independent
+                // terms.
+                if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
+
+                    SumSysM_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate;
+                    SumSysMHumRat_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio;
+
+                    AA = SumSysM_HM + OAMFL(ZoneNum) + VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) +
+                         MixingMassFlowZone(ZoneNum) + MDotOA(ZoneNum);
+                    BB = SumSysMHumRat_HM + (LatentGainExceptPeople / H2OHtOfVap) + ((OAMFL(ZoneNum) + VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) +
+                         EAMFLxHumRat(ZoneNum) + SumHmARaW(ZoneNum) + MixingMassFlowXHumRat(ZoneNum) + MDotOA(ZoneNum) * OutHumRat;
+                } else {
+                    AA = ZoneMassFlowRate + OAMFL(ZoneNum) + VAMFL(ZoneNum) + EAMFL(ZoneNum) + CTMFL(ZoneNum) + SumHmARa(ZoneNum) +
+                         MixingMassFlowZone(ZoneNum) + MDotOA(ZoneNum);
+                    BB = (LatentGainExceptPeople / H2OHtOfVap) + ((OAMFL(ZoneNum) + VAMFL(ZoneNum) + CTMFL(ZoneNum)) * OutHumRat) +
+                         EAMFLxHumRat(ZoneNum) + (MoistureMassFlowRate) + SumHmARaW(ZoneNum) + MixingMassFlowXHumRat(ZoneNum) +
+                         MDotOA(ZoneNum) * OutHumRat;
+                }
+
+                CC = RhoAir * Zone(ZoneNum).Volume * Zone(ZoneNum).ZoneVolCapMultpMoist / SysTimeStepInSeconds;
+                DD = (3.0 * PreviousMeasuredHumRat1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredHumRat2(ZoneNum) +
+                      (1.0 / 3.0) * PreviousMeasuredHumRat3(ZoneNum));
+
+                LatentGainPeople = (((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredHumidityRatio - BB - CC * DD) * H2OHtOfVap;
+                UpperBound = max(0.0, LatentGain / (ActivityLevel * (1.0 - FractionSensible)));
+                NumPeople = min(UpperBound, max(0.0, LatentGainPeople / (ActivityLevel * (1.0 - FractionSensible))));
+                NumPeople = floor(NumPeople * 100.00 + 0.5) / 100.00;
+                if (NumPeople < 0.05) {
+                    NumPeople = 0;
+                }
+                Zone(ZoneNum).NumOccHM = NumPeople;
+            }
+        }
+
+        // Update zone humidity ratio in the previous steps
+        PreviousMeasuredHumRat3(ZoneNum) = PreviousMeasuredHumRat2(ZoneNum);
+        PreviousMeasuredHumRat2(ZoneNum) = PreviousMeasuredHumRat1(ZoneNum);
+        PreviousMeasuredHumRat1(ZoneNum) = Zone(ZoneNum).ZoneMeasuredHumidityRatio;
     }
 
     void CalcZoneSums(int const ZoneNum,  // Zone number

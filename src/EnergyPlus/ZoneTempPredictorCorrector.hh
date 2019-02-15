@@ -283,6 +283,15 @@ namespace ZoneTempPredictorCorrector {
                                  Real64 &AirCap                  // Formerly CoefAirrat, coef in zone temp eqn with dim of "air power capacity"rd
     );
 
+    void InverseModelHumidity(int const ZoneNum,              // Zone number
+                              Real64 &LatentGain,             // Zone sum of latent gain
+                              Real64 &LatentGainExceptPeople, // Zone sum of latent gain except for people
+                              Real64 &ZoneMassFlowRate,       // Zone air mass flow rate
+                              Real64 &MoistureMassFlowRate,   // Zone moisture mass flow rate
+                              Real64 &H2OHtOfVap,             // Heat of vaporization of air
+                              Real64 &RhoAir                  // Air density
+    );
+
     void CalcZoneSums(int const ZoneNum,  // Zone number
                       Real64 &SumIntGain, // Zone sum of convective internal gains
                       Real64 &SumHA,      // Zone sum of Hc*Area
