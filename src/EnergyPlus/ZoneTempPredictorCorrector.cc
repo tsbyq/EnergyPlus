@@ -5697,7 +5697,7 @@ namespace ZoneTempPredictorCorrector {
 
         // HybridModel with measured humidity ratio begins
         if ((HybridModelZone(ZoneNum).InfiltrationCalc_H || HybridModelZone(ZoneNum).PeopleCountCalc_H) && (!WarmupFlag) && (!DoingSizing)) {
-			InverseModelHumidity(ZoneNum, LatentGain, LatentGainExceptPeople, ZoneMassFlowRate, MoistureMassFlowRate, H2OHtOfVap, RhoAir);
+            InverseModelHumidity(ZoneNum, LatentGain, LatentGainExceptPeople, ZoneMassFlowRate, MoistureMassFlowRate, H2OHtOfVap, RhoAir);
         }
 
         // Now put the calculated info into the actual zone nodes; ONLY if there is zone air flow, i.e. controlled zone or plenum zone
