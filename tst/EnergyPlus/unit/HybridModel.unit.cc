@@ -101,7 +101,7 @@ using namespace EnergyPlus::DataRoomAirModel;
 using namespace EnergyPlus::HybridModel;
 using namespace EnergyPlus::DataPrecisionGlobals;
 
-TEST_F(EnergyPlusFixture, ZoneTempPredictorCorrector_CorrectZoneAirTempTest)
+TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
 {
 
     // ZoneTempPredictorCorrector variable initialization
