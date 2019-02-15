@@ -5137,7 +5137,7 @@ namespace ZoneTempPredictorCorrector {
                  HybridModelZone(ZoneNum).PeopleCountCalc_T) &&
                 (!WarmupFlag) && (!DoingSizing)) {
                 InverseModelTemperature(
-                    ZoneNum, SumIntGain, SumIntGainExceptPeople, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
+                    ZoneNum, SumIntGain, SumIntGainExceptPeople, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT, AirCap);
             }
 
             MAT(ZoneNum) = ZT(ZoneNum);
@@ -5938,7 +5938,8 @@ namespace ZoneTempPredictorCorrector {
                                  Real64 &SumMCp,                 // Zone sum of MassFlowRate*Cp
                                  Real64 &SumMCpT,                // Zone sum of MassFlowRate*Cp*T
                                  Real64 &SumSysMCp,              // Zone sum of air system MassFlowRate*Cp
-                                 Real64 &SumSysMCpT              // Zone sum of air system MassFlowRate*Cp*T
+                                 Real64 &SumSysMCpT,             // Zone sum of air system MassFlowRate*Cp*T
+                                 Real64 &AirCap                  // Formerly CoefAirrat, coef in zone temp eqn with dim of "air power capacity"rd
     )
     {
         // SUBROUTINE INFORMATION:
@@ -5960,7 +5961,6 @@ namespace ZoneTempPredictorCorrector {
         Real64 CpAir;                   // specific heat of air
         static Real64 TempDepCoef(0.0); // Formerly CoefSumha, coef in zone temp equation with dimensions of h*A
         static Real64 TempIndCoef(0.0); // Formerly CoefSumhat, coef in zone temp equation with dimensions of h*A(T1
-        static Real64 AirCap(0.0);      // Formerly CoefAirrat, coef in zone temp eqn with dim of "air power capacity"
         static Real64 AirCapHM(0.0);    // Air power capacity for hybrid modeling
 
         Real64 AA(0.0);
