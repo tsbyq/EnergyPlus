@@ -270,6 +270,18 @@ namespace ZoneTempPredictorCorrector {
                                        Real64 &newVal4  // unused 1208
     );
 
+	void InverseModelTemperature(int const ZoneNum,              // Zone number
+		Real64 &SumIntGain,             // Zone sum of convective internal gains
+		Real64 &SumIntGainExceptPeople, // Zone sum of convective internal gains except for people
+		Real64 &SumHA,                  // Zone sum of Hc*Area
+		Real64 &SumHATsurf,             // Zone sum of Hc*Area*Tsurf
+		Real64 &SumHATref,              // Zone sum of Hc*Area*Tref, for ceiling diffuser convection correlation
+		Real64 &SumMCp,                 // Zone sum of MassFlowRate*Cp
+		Real64 &SumMCpT,                // Zone sum of MassFlowRate*Cp*T
+		Real64 &SumSysMCp,              // Zone sum of air system MassFlowRate*Cp
+		Real64 &SumSysMCpT              // Zone sum of air system MassFlowRate*Cp*T
+	);
+
     void CalcZoneSums(int const ZoneNum,  // Zone number
                       Real64 &SumIntGain, // Zone sum of convective internal gains
                       Real64 &SumHA,      // Zone sum of Hc*Area

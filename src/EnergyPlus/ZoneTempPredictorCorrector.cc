@@ -5132,232 +5132,13 @@ namespace ZoneTempPredictorCorrector {
             }
 
             // Hybrid modeling start: Added by Sang Hoon Lee May 2015, updated by Han Li 2018
+
             if ((HybridModelZone(ZoneNum).InfiltrationCalc_T || HybridModelZone(ZoneNum).InternalThermalMassCalc_T ||
                  HybridModelZone(ZoneNum).PeopleCountCalc_T) &&
                 (!WarmupFlag) && (!DoingSizing)) {
-
-                Zone(ZoneNum).ZoneMeasuredTemperature = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredTemperatureSchedulePtr);
-
-                // HM calculation only HM calculation period start
-                if (DayOfYear >= HybridModelZone(ZoneNum).HybridStartDayOfYear && DayOfYear <= HybridModelZone(ZoneNum).HybridEndDayOfYear) {
-
-                    Real64 HMMultiplierAverage(1.0);
-                    Real64 MultpHM(1.0);
-
-                    ZT(ZoneNum) =
-                        Zone(ZoneNum).ZoneMeasuredTemperature; // Array1D<Real64> ZT -- Zone Air Temperature Averaged over the System Time Increment
-                    if (HybridModelZone(ZoneNum).InfiltrationCalc_T && UseZoneTimeStepHistory) {
-
-                        // Use3rdOrder
-                        Real64 AA(0.0);
-                        Real64 BB(0.0);
-                        Real64 CC(0.0);
-                        Real64 DD(0.0);
-                        Real64 zone_M_T(0.0);
-                        Real64 delta_T(0.0);
-                        Real64 AirDensity(0.0);
-                        Real64 CpAir(0.0);
-                        Real64 M_inf(0.0);
-                        Real64 ACH_inf(0.0);
-                        Real64 SumSysMCp_HM(0.0);
-                        Real64 SumSysMCpT_HM(0.0);
-
-                        static std::string const RoutineNameInfiltration("CalcAirFlowSimple:Infiltration");
-
-                        if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
-
-                            Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature =
-                                GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirTemperatureSchedulePtr);
-                            Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
-                                GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
-                            Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
-                                GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
-                            // Calculate the air humidity ratio at supply air inlet.
-                            Real64 CpAirInlet(0.0);
-                            CpAirInlet =
-                                PsyCpAirFnWTdb(Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio, Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature);
-
-                            SumSysMCp_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet;
-                            SumSysMCpT_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet * Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature;
-
-                            AA = SumSysMCp_HM + SumHA + MCPV(ZoneNum) + MCPM(ZoneNum) + MCPE(ZoneNum) + MCPC(ZoneNum) + MDotCPOA(ZoneNum);
-                            BB = SumSysMCpT_HM + SumIntGain + SumHATsurf - SumHATref + MCPTV(ZoneNum) + MCPTM(ZoneNum) + MCPTE(ZoneNum) +
-                                 MCPTC(ZoneNum) + MDotCPOA(ZoneNum) * Zone(ZoneNum).OutDryBulbTemp +
-                                 (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
-                        } else {
-                            AA = SumHA + MCPV(ZoneNum) + MCPM(ZoneNum) + MCPE(ZoneNum) + MCPC(ZoneNum) + MDotCPOA(ZoneNum);
-                            BB = SumIntGain + SumHATsurf - SumHATref + MCPTV(ZoneNum) + MCPTM(ZoneNum) + MCPTE(ZoneNum) + MCPTC(ZoneNum) +
-                                 MDotCPOA(ZoneNum) * Zone(ZoneNum).OutDryBulbTemp;
-                        }
-                        CC = AirCap;
-                        DD = (3.0 * PreviousMeasuredZT1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredZT2(ZoneNum) +
-                              (1.0 / 3.0) * PreviousMeasuredZT3(ZoneNum));
-
-                        zone_M_T = Zone(ZoneNum).ZoneMeasuredTemperature;
-                        delta_T = (Zone(ZoneNum).ZoneMeasuredTemperature - Zone(ZoneNum).OutDryBulbTemp);
-                        CpAir = PsyCpAirFnWTdb(OutHumRat, Zone(ZoneNum).OutDryBulbTemp);
-                        AirDensity = PsyRhoAirFnPbTdbW(OutBaroPress, Zone(ZoneNum).OutDryBulbTemp, OutHumRat, RoutineNameInfiltration);
-                        Zone(ZoneNum).delta_T = delta_T;
-
-                        // s4 - Set ACH to 0 when delta_T <= 0.5, add max and min limits to ach
-                        if (abs(delta_T) <= 0.5) {
-                            M_inf = 0.0;
-                        } else {
-                            M_inf = (BB + CC * DD - ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredTemperature) / (CpAir * delta_T);
-                        }
-                        ACH_inf = max(0.0, min(10.0, (M_inf / AirDensity) / Zone(ZoneNum).Volume * SecInHour));
-                        M_inf = (ACH_inf / SecInHour) * Zone(ZoneNum).Volume * AirDensity;
-
-                        // Overwrite variable with inverse solution
-                        Zone(ZoneNum).MCPIHM = M_inf;
-                        Zone(ZoneNum).InfilOAAirChangeRateHM = ACH_inf;
-
-                    } // Hybrid model infiltration calcualtion end
-
-                    // Hybrid modeling internal thermal mass calcualtion start
-                    if (HybridModelZone(ZoneNum).InternalThermalMassCalc_T && SumSysMCpT == 0 && ZT(ZoneNum) != PreviousMeasuredZT1(ZoneNum) &&
-                        UseZoneTimeStepHistory) { // HM calculation only when SumSysMCpT =0, TimeStepZone (not @ TimeStepSys)
-
-                        // Calculate air capacity using UseAnalyticalSolution
-                        if (TempDepCoef == 0.0) {
-                            // Is this correct? Shouldn't we use log?? What if ZT(ZoneNum) == PreviousMeasuredZT1(ZoneNum)??
-                            AirCapHM = TempIndCoef / (ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum)); // Inverse equation
-                        } else {
-                            Real64 AirCapHM_temp = 0.0;
-                            if (TempIndCoef == TempDepCoef * ZT(ZoneNum)) {
-                                AirCapHM_temp = 0.0; //  This is the denominator.
-                            } else {
-                                AirCapHM_temp =
-                                    (TempIndCoef - TempDepCoef * PreviousMeasuredZT1(ZoneNum)) / (TempIndCoef - TempDepCoef * ZT(ZoneNum));
-                            }
-
-                            if ((AirCapHM_temp > 0) && (AirCapHM_temp != 1)) {    // Avoide IND
-                                AirCapHM = TempDepCoef / std::log(AirCapHM_temp); // Inverse equation
-                            } else {
-                                AirCapHM = TempIndCoef / (ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum));
-                            }
-                        }
-
-                        // Calculate multiplier
-                        if (abs(ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum)) > 0.05) { // Filter
-                            MultpHM = AirCapHM /
-                                      (Zone(ZoneNum).Volume * PsyRhoAirFnPbTdbW(OutBaroPress, ZT(ZoneNum), ZoneAirHumRat(ZoneNum)) *
-                                       PsyCpAirFnWTdb(ZoneAirHumRat(ZoneNum), ZT(ZoneNum))) *
-                                      (TimeStepZone * SecInHour);      // Inverse equation
-                            if ((MultpHM < 1.0) || (MultpHM > 30.0)) { // Temperature capacity multiplier greater than 1 and less than 30
-                                MultpHM = 1.0;                         // Default value 1.0
-                            }
-                        } else {
-                            MultpHM = 1.0; // Default value 1.0
-                        }
-
-                        // For timestep output
-                        Zone(ZoneNum).ZoneVolCapMultpSensHM = MultpHM;
-
-                        // Calculate the average multiplier of the zone for the whole running period
-                        {
-                            // count for hybrid model calculations
-                            if (MultpHM > 1.0) {
-                                Zone(ZoneNum).ZoneVolCapMultpSensHMSum += MultpHM;
-                                Zone(ZoneNum).ZoneVolCapMultpSensHMCountSum++;
-                            }
-
-                            // Calculate and store the multiplier average at the end of HM simulations
-                            if (DayOfYear == HybridModelZone(ZoneNum).HybridEndDayOfYear && EndDayFlag) {
-                                HMMultiplierAverage = Zone(ZoneNum).ZoneVolCapMultpSensHMSum / Zone(ZoneNum).ZoneVolCapMultpSensHMCountSum;
-                                Zone(ZoneNum).ZoneVolCapMultpSensHMAverage = HMMultiplierAverage;
-                            }
-                        }
-                    } // Hybrid model internal thermal mass calcualtion end
-
-                    // Hybrid model people count calculation
-                    if (HybridModelZone(ZoneNum).PeopleCountCalc_T && UseZoneTimeStepHistory) {
-
-                        Real64 AA(0.0);               // Same as A -- Sum of temperature independent terms
-                        Real64 BB(0.0);               // Sum of zone internal convective heat gains except for the part from people
-                        Real64 CC(0.0);               // Same as C, zone air heat capacity
-                        Real64 DD(0.0);               // 3rd order backward difference terms
-                        Real64 SumIntGainPeople(0.0); // Inversely solved convectice heat gain from people
-                        Real64 SumSysMCp_HM(0.0);
-                        Real64 SumSysMCpT_HM(0.0);
-                        Real64 NumPeople(0.0);          // Inversely solved number of people in the zone
-                        Real64 FractionSensible(0.0);   // Default sensible portion of the total heat from people
-                        Real64 FractionRadiation(0.0);  // Default radiation portion of the sensible heat from people
-                        Real64 FractionConvection(0.0); // Default radiation portion of the sensible heat from people
-                        Real64 ActivityLevel(0.0);
-                        Real64 UpperBound(0.0); // Upper bound of number of people
-
-                        Zone(ZoneNum).ZoneMeasuredTemperature = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredTemperatureSchedulePtr);
-                        Zone(ZoneNum).ZonePeopleActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
-                        Zone(ZoneNum).ZonePeopleSensibleHeatFraction =
-                            GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleSensibleFractionSchedulePtr);
-                        Zone(ZoneNum).ZonePeopleRadiantHeatFraction =
-                            GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleRadiationFractionSchedulePtr);
-
-                        FractionSensible = Zone(ZoneNum).ZonePeopleSensibleHeatFraction;
-                        FractionRadiation = Zone(ZoneNum).ZonePeopleRadiantHeatFraction;
-                        ActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
-
-                        if (FractionSensible <= 0.0) {
-                            FractionSensible = 0.6;
-                        }
-
-                        if (FractionRadiation <= 0.0) {
-                            FractionConvection = 0.7;
-                        } else {
-                            FractionConvection = 1.0 - FractionRadiation;
-                        }
-
-                        if (ActivityLevel <= 0.0) {
-                            ActivityLevel = 130.0;
-                        }
-
-                        if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
-
-                            Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature =
-                                GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirTemperatureSchedulePtr);
-                            Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
-                                GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
-                            Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
-                                GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
-
-                            // Calculate the air humidity ratio at supply air inlet.
-                            Real64 CpAirInlet(0.0);
-                            CpAirInlet =
-                                PsyCpAirFnWTdb(Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio, Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature);
-
-                            SumSysMCp_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet;
-                            SumSysMCpT_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet * Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature;
-
-                            AA = SumSysMCp_HM + SumHA + SumMCp;
-                            BB = SumSysMCpT_HM + SumIntGainExceptPeople + SumHATsurf - SumHATref + SumMCpT +
-                                 (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
-                        } else {
-                            AA = SumHA + SumMCp;
-                            BB = SumIntGainExceptPeople + SumHATsurf - SumHATref + SumMCpT;
-                        }
-
-                        CC = AirCap;
-                        DD = (3.0 * PreviousMeasuredZT1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredZT2(ZoneNum) +
-                              (1.0 / 3.0) * PreviousMeasuredZT3(ZoneNum));
-
-                        SumIntGainPeople = ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredTemperature - BB - CC * DD;
-                        UpperBound = max(0.0, SumIntGain / (ActivityLevel * FractionSensible * FractionConvection));
-                        NumPeople = min(UpperBound, max(0.0, SumIntGainPeople / (ActivityLevel * FractionSensible * FractionConvection)));
-
-                        if (NumPeople < 0.05) {
-                            NumPeople = 0;
-                        }
-                        Zone(ZoneNum).NumOccHM = NumPeople;
-                    }
-                }
-
-                // Update zone temperatures in the previous steps
-                PreviousMeasuredZT3(ZoneNum) = PreviousMeasuredZT2(ZoneNum);
-                PreviousMeasuredZT2(ZoneNum) = PreviousMeasuredZT1(ZoneNum);
-                PreviousMeasuredZT1(ZoneNum) = ZT(ZoneNum);
-
-            } // Hybrid model end
+                InverseModelTemperature(
+                    ZoneNum, SumIntGain, SumIntGainExceptPeople, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT);
+            }
 
             MAT(ZoneNum) = ZT(ZoneNum);
 
@@ -6146,6 +5927,259 @@ namespace ZoneTempPredictorCorrector {
             newVal3 = oldVal0 + (oldVal1 - oldVal0) * ((oldTime0 - newTime3) / (OldTimeStep));
             newVal4 = oldVal0 + (oldVal1 - oldVal0) * ((oldTime0 - newTime4) / (OldTimeStep));
         }
+    }
+
+    void InverseModelTemperature(int const ZoneNum,              // Zone number
+                                 Real64 &SumIntGain,             // Zone sum of convective internal gains
+                                 Real64 &SumIntGainExceptPeople, // Zone sum of convective internal gains except for people
+                                 Real64 &SumHA,                  // Zone sum of Hc*Area
+                                 Real64 &SumHATsurf,             // Zone sum of Hc*Area*Tsurf
+                                 Real64 &SumHATref,              // Zone sum of Hc*Area*Tref, for ceiling diffuser convection correlation
+                                 Real64 &SumMCp,                 // Zone sum of MassFlowRate*Cp
+                                 Real64 &SumMCpT,                // Zone sum of MassFlowRate*Cp*T
+                                 Real64 &SumSysMCp,              // Zone sum of air system MassFlowRate*Cp
+                                 Real64 &SumSysMCpT              // Zone sum of air system MassFlowRate*Cp*T
+    )
+    {
+        // SUBROUTINE INFORMATION:
+        //       AUTHOR         Han Li
+        //       DATE WRITTEN   February 2019
+        //       MODIFIED
+        //       RE-ENGINEERED
+
+        // PURPOSE OF THIS SUBROUTINE:
+        // This subroutine inversely solve infiltration airflow rate or people count with zone air tempearture measurements.
+
+        // Using/Aliasing
+        using DataEnvironment::DayOfYear;
+
+        // SUBROUTINE PARAMETER DEFINITIONS:
+        static std::string const RoutineName("InverseModelTemperature");
+
+        // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
+        Real64 CpAir;                   // specific heat of air
+        static Real64 TempDepCoef(0.0); // Formerly CoefSumha, coef in zone temp equation with dimensions of h*A
+        static Real64 TempIndCoef(0.0); // Formerly CoefSumhat, coef in zone temp equation with dimensions of h*A(T1
+        static Real64 AirCap(0.0);      // Formerly CoefAirrat, coef in zone temp eqn with dim of "air power capacity"
+        static Real64 AirCapHM(0.0);    // Air power capacity for hybrid modeling
+
+        Real64 AA(0.0);
+        Real64 BB(0.0);
+        Real64 CC(0.0);
+        Real64 DD(0.0);
+        Real64 SumIntGainPeople(0.0); // Inversely solved convectice heat gain from people
+        Real64 SumSysMCp_HM(0.0);
+        Real64 SumSysMCpT_HM(0.0);
+        Real64 NumPeople(0.0);          // Inversely solved number of people in the zone
+        Real64 FractionSensible(0.0);   // Default sensible portion of the total heat from people
+        Real64 FractionRadiation(0.0);  // Default radiation portion of the sensible heat from people
+        Real64 FractionConvection(0.0); // Default convection portion of the sensible heat from people
+        Real64 ActivityLevel(0.0);      // People activity level
+        Real64 UpperBound(0.0);         // Upper bound of number of people
+        Real64 zone_M_T(0.0);
+        Real64 delta_T(0.0);
+        Real64 AirDensity(0.0);
+        Real64 M_inf(0.0);
+        Real64 ACH_inf(0.0);
+        Real64 ZoneMult;
+
+        ZoneMult = Zone(ZoneNum).Multiplier * Zone(ZoneNum).ListMultiplier;
+        Zone(ZoneNum).ZoneMeasuredTemperature = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredTemperatureSchedulePtr);
+
+        // HM calculation only HM calculation period start
+        if (DayOfYear >= HybridModelZone(ZoneNum).HybridStartDayOfYear && DayOfYear <= HybridModelZone(ZoneNum).HybridEndDayOfYear) {
+            Real64 HMMultiplierAverage(1.0);
+            Real64 MultpHM(1.0);
+
+            ZT(ZoneNum) = Zone(ZoneNum).ZoneMeasuredTemperature; // Array1D<Real64> ZT -- Zone
+                                                                 // Air Temperature Averaged over
+                                                                 // the System Time Increment
+            if (HybridModelZone(ZoneNum).InfiltrationCalc_T && UseZoneTimeStepHistory) {
+
+                static std::string const RoutineNameInfiltration("CalcAirFlowSimple:Infiltration");
+
+                if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirTemperatureSchedulePtr);
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
+                    // Calculate the air humidity ratio at supply air inlet.
+                    Real64 CpAirInlet(0.0);
+                    CpAirInlet = PsyCpAirFnWTdb(Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio, Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature);
+
+                    SumSysMCp_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet;
+                    SumSysMCpT_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet * Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature;
+
+                    AA = SumSysMCp_HM + SumHA + MCPV(ZoneNum) + MCPM(ZoneNum) + MCPE(ZoneNum) + MCPC(ZoneNum) + MDotCPOA(ZoneNum);
+                    BB = SumSysMCpT_HM + SumIntGain + SumHATsurf - SumHATref + MCPTV(ZoneNum) + MCPTM(ZoneNum) + MCPTE(ZoneNum) + MCPTC(ZoneNum) +
+                         MDotCPOA(ZoneNum) * Zone(ZoneNum).OutDryBulbTemp +
+                         (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
+                } else {
+                    AA = SumHA + MCPV(ZoneNum) + MCPM(ZoneNum) + MCPE(ZoneNum) + MCPC(ZoneNum) + MDotCPOA(ZoneNum);
+                    BB = SumIntGain + SumHATsurf - SumHATref + MCPTV(ZoneNum) + MCPTM(ZoneNum) + MCPTE(ZoneNum) + MCPTC(ZoneNum) +
+                         MDotCPOA(ZoneNum) * Zone(ZoneNum).OutDryBulbTemp;
+                }
+                CC = AirCap;
+                DD = (3.0 * PreviousMeasuredZT1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredZT2(ZoneNum) + (1.0 / 3.0) * PreviousMeasuredZT3(ZoneNum));
+
+                zone_M_T = Zone(ZoneNum).ZoneMeasuredTemperature;
+                delta_T = (Zone(ZoneNum).ZoneMeasuredTemperature - Zone(ZoneNum).OutDryBulbTemp);
+                CpAir = PsyCpAirFnWTdb(OutHumRat, Zone(ZoneNum).OutDryBulbTemp);
+                AirDensity = PsyRhoAirFnPbTdbW(OutBaroPress, Zone(ZoneNum).OutDryBulbTemp, OutHumRat, RoutineNameInfiltration);
+                Zone(ZoneNum).delta_T = delta_T;
+
+                // s4 - Set ACH to 0 when delta_T <= 0.5, add max and min limits to ach
+                if (abs(delta_T) <= 0.5) {
+                    M_inf = 0.0;
+                } else {
+                    M_inf = (BB + CC * DD - ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredTemperature) / (CpAir * delta_T);
+                }
+                ACH_inf = max(0.0, min(10.0, (M_inf / AirDensity) / Zone(ZoneNum).Volume * SecInHour));
+                M_inf = (ACH_inf / SecInHour) * Zone(ZoneNum).Volume * AirDensity;
+
+                // Overwrite variable with inverse solution
+                Zone(ZoneNum).MCPIHM = M_inf;
+                Zone(ZoneNum).InfilOAAirChangeRateHM = ACH_inf;
+
+            } // Hybrid model infiltration calcualtion end
+
+            // Hybrid modeling internal thermal mass calcualtion start
+            if (HybridModelZone(ZoneNum).InternalThermalMassCalc_T && SumSysMCpT == 0 && ZT(ZoneNum) != PreviousMeasuredZT1(ZoneNum) &&
+                UseZoneTimeStepHistory) { // HM calculation only when SumSysMCpT =0,
+                                          // TimeStepZone (not @ TimeStepSys)
+                TempDepCoef = SumHA + SumMCp + SumSysMCp;
+                TempIndCoef = SumIntGain + SumHATsurf - SumHATref + SumMCpT + SumSysMCpT +
+                              (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
+                //    TempHistoryTerm = AirCap * (3.0 * ZTM1(ZoneNum) - (3.0/2.0) * ZTM2(ZoneNum) + (1.0/3.0) * ZTM3(ZoneNum)) !debug only
+
+                if (AirflowNetwork::SimulateAirflowNetwork > AirflowNetwork::AirflowNetworkControlMultizone) {
+                    TempIndCoef += AirflowNetwork::AirflowNetworkExchangeData(ZoneNum).TotalSen;
+                }
+                // Calculate air capacity using UseAnalyticalSolution
+                if (TempDepCoef == 0.0) {
+                    // Is this correct? Shouldn't we use log?? What if ZT(ZoneNum) ==
+                    // PreviousMeasuredZT1(ZoneNum)??
+                    AirCapHM = TempIndCoef / (ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum)); // Inverse equation
+                } else {
+                    Real64 AirCapHM_temp = 0.0;
+                    if (TempIndCoef == TempDepCoef * ZT(ZoneNum)) {
+                        AirCapHM_temp = 0.0; //  This is the denominator.
+                    } else {
+                        AirCapHM_temp = (TempIndCoef - TempDepCoef * PreviousMeasuredZT1(ZoneNum)) / (TempIndCoef - TempDepCoef * ZT(ZoneNum));
+                    }
+
+                    if ((AirCapHM_temp > 0) && (AirCapHM_temp != 1)) {    // Avoide IND
+                        AirCapHM = TempDepCoef / std::log(AirCapHM_temp); // Inverse equation
+                    } else {
+                        AirCapHM = TempIndCoef / (ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum));
+                    }
+                }
+
+                // Calculate multiplier
+                if (abs(ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum)) > 0.05) { // Filter
+                    MultpHM = AirCapHM /
+                              (Zone(ZoneNum).Volume * PsyRhoAirFnPbTdbW(OutBaroPress, ZT(ZoneNum), ZoneAirHumRat(ZoneNum)) *
+                               PsyCpAirFnWTdb(ZoneAirHumRat(ZoneNum), ZT(ZoneNum))) *
+                              (TimeStepZone * SecInHour);      // Inverse equation
+                    if ((MultpHM < 1.0) || (MultpHM > 30.0)) { // Temperature capacity multiplier greater than
+                                                               // 1 and less than 30
+                        MultpHM = 1.0;                         // Default value 1.0
+                    }
+                } else {
+                    MultpHM = 1.0; // Default value 1.0
+                }
+
+                // For timestep output
+                Zone(ZoneNum).ZoneVolCapMultpSensHM = MultpHM;
+
+                // Calculate the average multiplier of the zone for the whole running
+                // period
+                {
+                    // count for hybrid model calculations
+                    if (MultpHM > 1.0) {
+                        Zone(ZoneNum).ZoneVolCapMultpSensHMSum += MultpHM;
+                        Zone(ZoneNum).ZoneVolCapMultpSensHMCountSum++;
+                    }
+
+                    // Calculate and store the multiplier average at the end of HM
+                    // simulations
+                    if (DayOfYear == HybridModelZone(ZoneNum).HybridEndDayOfYear && EndDayFlag) {
+                        HMMultiplierAverage = Zone(ZoneNum).ZoneVolCapMultpSensHMSum / Zone(ZoneNum).ZoneVolCapMultpSensHMCountSum;
+                        Zone(ZoneNum).ZoneVolCapMultpSensHMAverage = HMMultiplierAverage;
+                    }
+                }
+            } // Hybrid model internal thermal mass calcualtion end
+
+            // Hybrid model people count calculation
+            if (HybridModelZone(ZoneNum).PeopleCountCalc_T && UseZoneTimeStepHistory) {
+                Zone(ZoneNum).ZoneMeasuredTemperature = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredTemperatureSchedulePtr);
+                Zone(ZoneNum).ZonePeopleActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
+                Zone(ZoneNum).ZonePeopleSensibleHeatFraction =
+                    GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleSensibleFractionSchedulePtr);
+                Zone(ZoneNum).ZonePeopleRadiantHeatFraction =
+                    GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleRadiationFractionSchedulePtr);
+
+                FractionSensible = Zone(ZoneNum).ZonePeopleSensibleHeatFraction;
+                FractionRadiation = Zone(ZoneNum).ZonePeopleRadiantHeatFraction;
+                ActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
+
+                if (FractionSensible <= 0.0) {
+                    FractionSensible = 0.6;
+                }
+
+                if (FractionRadiation <= 0.0) {
+                    FractionConvection = 0.7;
+                } else {
+                    FractionConvection = 1.0 - FractionRadiation;
+                }
+
+                if (ActivityLevel <= 0.0) {
+                    ActivityLevel = 130.0;
+                }
+
+                if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirTemperatureSchedulePtr);
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
+                    Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
+                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
+
+                    // Calculate the air humidity ratio at supply air inlet.
+                    Real64 CpAirInlet(0.0);
+                    CpAirInlet = PsyCpAirFnWTdb(Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio, Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature);
+
+                    SumSysMCp_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet;
+                    SumSysMCpT_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet * Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature;
+
+                    AA = SumSysMCp_HM + SumHA + SumMCp;
+                    BB = SumSysMCpT_HM + SumIntGainExceptPeople + SumHATsurf - SumHATref + SumMCpT +
+                         (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
+                } else {
+                    AA = SumHA + SumMCp;
+                    BB = SumIntGainExceptPeople + SumHATsurf - SumHATref + SumMCpT;
+                }
+
+                CC = AirCap;
+                DD = (3.0 * PreviousMeasuredZT1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredZT2(ZoneNum) + (1.0 / 3.0) * PreviousMeasuredZT3(ZoneNum));
+
+                SumIntGainPeople = ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredTemperature - BB - CC * DD;
+                UpperBound = max(0.0, SumIntGain / (ActivityLevel * FractionSensible * FractionConvection));
+                NumPeople = min(UpperBound, max(0.0, SumIntGainPeople / (ActivityLevel * FractionSensible * FractionConvection)));
+
+                if (NumPeople < 0.05) {
+                    NumPeople = 0;
+                }
+                Zone(ZoneNum).NumOccHM = NumPeople;
+            }
+        }
+
+        // Update zone temperatures in the previous steps
+        PreviousMeasuredZT3(ZoneNum) = PreviousMeasuredZT2(ZoneNum);
+        PreviousMeasuredZT2(ZoneNum) = PreviousMeasuredZT1(ZoneNum);
+        PreviousMeasuredZT1(ZoneNum) = ZT(ZoneNum);
     }
 
     void CalcZoneSums(int const ZoneNum,  // Zone number
@@ -7719,263 +7753,6 @@ namespace ZoneTempPredictorCorrector {
                 }
             }
         }
-    }
-
-    void InverseModelTemperature(int const ZoneNum,              // Zone number
-                                 Real64 &SumIntGain,             // Zone sum of convective internal gains
-                                 Real64 &SumIntGainExceptPeople, // Zone sum of convective internal gains except for people
-                                 Real64 &SumHA,                  // Zone sum of Hc*Area
-                                 Real64 &SumHATsurf,             // Zone sum of Hc*Area*Tsurf
-                                 Real64 &SumHATref,              // Zone sum of Hc*Area*Tref, for ceiling diffuser convection correlation
-                                 Real64 &SumMCp,                 // Zone sum of MassFlowRate*Cp
-                                 Real64 &SumMCpT,                // Zone sum of MassFlowRate*Cp*T
-                                 Real64 &SumSysMCp,              // Zone sum of air system MassFlowRate*Cp
-                                 Real64 &SumSysMCpT              // Zone sum of air system MassFlowRate*Cp*T
-    )
-    {
-        // SUBROUTINE INFORMATION:
-        //       AUTHOR         Han Li
-        //       DATE WRITTEN   Feburary 2019
-        //       MODIFIED
-        //       RE-ENGINEERED
-
-        // PURPOSE OF THIS SUBROUTINE:
-        // This subroutine inversely solve infiltration airflow rate or people count with zone air tempearture measurements.
-
-        // Using/Aliasing
-        using DataEnvironment::DayOfYear;
-
-        // SUBROUTINE PARAMETER DEFINITIONS:
-        static std::string const RoutineName("InverseModelTemperature");
-
-        // SUBROUTINE LOCAL VARIABLE DECLARATIONS:
-        Real64 CpAir;                              // specific heat of air
-        static Real64 SumIntGainExceptPeople(0.0); // Zone sum of convective internal gains except for convective heat from people, HybridModel
-        static Real64 TempDepCoef(0.0);            // Formerly CoefSumha, coef in zone temp equation with dimensions of h*A
-        static Real64 TempIndCoef(0.0);            // Formerly CoefSumhat, coef in zone temp equation with dimensions of h*A(T1
-        static Real64 AirCap(0.0);                 // Formerly CoefAirrat, coef in zone temp eqn with dim of "air power capacity"
-        static Real64 AirCapHM(0.0);               // Air power capacity for hybrid modeling
-
-        Real64 AA(0.0);
-        Real64 BB(0.0);
-        Real64 CC(0.0);
-        Real64 DD(0.0);
-        Real64 SumIntGainPeople(0.0); // Inversely solved convectice heat gain from people
-        Real64 SumSysMCp_HM(0.0);
-        Real64 SumSysMCpT_HM(0.0);
-        Real64 NumPeople(0.0);          // Inversely solved number of people in the zone
-        Real64 FractionSensible(0.0);   // Default sensible portion of the total heat from people
-        Real64 FractionRadiation(0.0);  // Default radiation portion of the sensible heat from people
-        Real64 FractionConvection(0.0); // Default convection portion of the sensible heat from people
-        Real64 ActivityLevel(0.0);      // People activity level
-        Real64 UpperBound(0.0);         // Upper bound of number of people
-        Real64 zone_M_T(0.0);
-        Real64 delta_T(0.0);
-        Real64 AirDensity(0.0);
-        Real64 CpAir(0.0);
-        Real64 M_inf(0.0);
-        Real64 ACH_inf(0.0);
-        Real64 SumSysMCp_HM(0.0);
-        Real64 SumSysMCpT_HM(0.0);
-        Real64 ZoneMult;
-
-        ZoneMult = Zone(ZoneNum).Multiplier * Zone(ZoneNum).ListMultiplier;
-        Zone(ZoneNum).ZoneMeasuredTemperature = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredTemperatureSchedulePtr);
-
-        // HM calculation only HM calculation period start
-        if (DayOfYear >= HybridModelZone(ZoneNum).HybridStartDayOfYear && DayOfYear <= HybridModelZone(ZoneNum).HybridEndDayOfYear) {
-            Real64 HMMultiplierAverage(1.0);
-            Real64 MultpHM(1.0);
-
-            ZT(ZoneNum) = Zone(ZoneNum).ZoneMeasuredTemperature; // Array1D<Real64> ZT -- Zone
-                                                                 // Air Temperature Averaged over
-                                                                 // the System Time Increment
-            if (HybridModelZone(ZoneNum).InfiltrationCalc_T && UseZoneTimeStepHistory) {
-
-                static std::string const RoutineNameInfiltration("CalcAirFlowSimple:Infiltration");
-
-                if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
-                    Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirTemperatureSchedulePtr);
-                    Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
-                    Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
-                    // Calculate the air humidity ratio at supply air inlet.
-                    Real64 CpAirInlet(0.0);
-                    CpAirInlet = PsyCpAirFnWTdb(Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio, Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature);
-
-                    SumSysMCp_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet;
-                    SumSysMCpT_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet * Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature;
-
-                    AA = SumSysMCp_HM + SumHA + MCPV(ZoneNum) + MCPM(ZoneNum) + MCPE(ZoneNum) + MCPC(ZoneNum) + MDotCPOA(ZoneNum);
-                    BB = SumSysMCpT_HM + SumIntGain + SumHATsurf - SumHATref + MCPTV(ZoneNum) + MCPTM(ZoneNum) + MCPTE(ZoneNum) + MCPTC(ZoneNum) +
-                         MDotCPOA(ZoneNum) * Zone(ZoneNum).OutDryBulbTemp +
-                         (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
-                } else {
-                    AA = SumHA + MCPV(ZoneNum) + MCPM(ZoneNum) + MCPE(ZoneNum) + MCPC(ZoneNum) + MDotCPOA(ZoneNum);
-                    BB = SumIntGain + SumHATsurf - SumHATref + MCPTV(ZoneNum) + MCPTM(ZoneNum) + MCPTE(ZoneNum) + MCPTC(ZoneNum) +
-                         MDotCPOA(ZoneNum) * Zone(ZoneNum).OutDryBulbTemp;
-                }
-                CC = AirCap;
-                DD = (3.0 * PreviousMeasuredZT1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredZT2(ZoneNum) + (1.0 / 3.0) * PreviousMeasuredZT3(ZoneNum));
-
-                zone_M_T = Zone(ZoneNum).ZoneMeasuredTemperature;
-                delta_T = (Zone(ZoneNum).ZoneMeasuredTemperature - Zone(ZoneNum).OutDryBulbTemp);
-                CpAir = PsyCpAirFnWTdb(OutHumRat, Zone(ZoneNum).OutDryBulbTemp);
-                AirDensity = PsyRhoAirFnPbTdbW(OutBaroPress, Zone(ZoneNum).OutDryBulbTemp, OutHumRat, RoutineNameInfiltration);
-                Zone(ZoneNum).delta_T = delta_T;
-
-                // s4 - Set ACH to 0 when delta_T <= 0.5, add max and min limits to ach
-                if (abs(delta_T) <= 0.5) {
-                    M_inf = 0.0;
-                } else {
-                    M_inf = (BB + CC * DD - ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredTemperature) / (CpAir * delta_T);
-                }
-                ACH_inf = max(0.0, min(10.0, (M_inf / AirDensity) / Zone(ZoneNum).Volume * SecInHour));
-                M_inf = (ACH_inf / SecInHour) * Zone(ZoneNum).Volume * AirDensity;
-
-                // Overwrite variable with inverse solution
-                Zone(ZoneNum).MCPIHM = M_inf;
-                Zone(ZoneNum).InfilOAAirChangeRateHM = ACH_inf;
-
-            } // Hybrid model infiltration calcualtion end
-
-            // Hybrid modeling internal thermal mass calcualtion start
-            if (HybridModelZone(ZoneNum).InternalThermalMassCalc_T && SumSysMCpT == 0 && ZT(ZoneNum) != PreviousMeasuredZT1(ZoneNum) &&
-                UseZoneTimeStepHistory) { // HM calculation only when SumSysMCpT =0,
-                                          // TimeStepZone (not @ TimeStepSys)
-                TempDepCoef = SumHA + SumMCp + SumSysMCp;
-                TempIndCoef = SumIntGain + SumHATsurf - SumHATref + SumMCpT + SumSysMCpT +
-                              (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
-                //    TempHistoryTerm = AirCap * (3.0 * ZTM1(ZoneNum) - (3.0/2.0) * ZTM2(ZoneNum) + (1.0/3.0) * ZTM3(ZoneNum)) !debug only
-
-                if (AirflowNetwork::SimulateAirflowNetwork > AirflowNetwork::AirflowNetworkControlMultizone) {
-                    TempIndCoef += AirflowNetwork::AirflowNetworkExchangeData(ZoneNum).TotalSen;
-                }
-                // Calculate air capacity using UseAnalyticalSolution
-                if (TempDepCoef == 0.0) {
-                    // Is this correct? Shouldn't we use log?? What if ZT(ZoneNum) ==
-                    // PreviousMeasuredZT1(ZoneNum)??
-                    AirCapHM = TempIndCoef / (ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum)); // Inverse equation
-                } else {
-                    Real64 AirCapHM_temp = 0.0;
-                    if (TempIndCoef == TempDepCoef * ZT(ZoneNum)) {
-                        AirCapHM_temp = 0.0; //  This is the denominator.
-                    } else {
-                        AirCapHM_temp = (TempIndCoef - TempDepCoef * PreviousMeasuredZT1(ZoneNum)) / (TempIndCoef - TempDepCoef * ZT(ZoneNum));
-                    }
-
-                    if ((AirCapHM_temp > 0) && (AirCapHM_temp != 1)) {    // Avoide IND
-                        AirCapHM = TempDepCoef / std::log(AirCapHM_temp); // Inverse equation
-                    } else {
-                        AirCapHM = TempIndCoef / (ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum));
-                    }
-                }
-
-                // Calculate multiplier
-                if (abs(ZT(ZoneNum) - PreviousMeasuredZT1(ZoneNum)) > 0.05) { // Filter
-                    MultpHM = AirCapHM /
-                              (Zone(ZoneNum).Volume * PsyRhoAirFnPbTdbW(OutBaroPress, ZT(ZoneNum), ZoneAirHumRat(ZoneNum)) *
-                               PsyCpAirFnWTdb(ZoneAirHumRat(ZoneNum), ZT(ZoneNum))) *
-                              (TimeStepZone * SecInHour);      // Inverse equation
-                    if ((MultpHM < 1.0) || (MultpHM > 30.0)) { // Temperature capacity multiplier greater than
-                                                               // 1 and less than 30
-                        MultpHM = 1.0;                         // Default value 1.0
-                    }
-                } else {
-                    MultpHM = 1.0; // Default value 1.0
-                }
-
-                // For timestep output
-                Zone(ZoneNum).ZoneVolCapMultpSensHM = MultpHM;
-
-                // Calculate the average multiplier of the zone for the whole running
-                // period
-                {
-                    // count for hybrid model calculations
-                    if (MultpHM > 1.0) {
-                        Zone(ZoneNum).ZoneVolCapMultpSensHMSum += MultpHM;
-                        Zone(ZoneNum).ZoneVolCapMultpSensHMCountSum++;
-                    }
-
-                    // Calculate and store the multiplier average at the end of HM
-                    // simulations
-                    if (DayOfYear == HybridModelZone(ZoneNum).HybridEndDayOfYear && EndDayFlag) {
-                        HMMultiplierAverage = Zone(ZoneNum).ZoneVolCapMultpSensHMSum / Zone(ZoneNum).ZoneVolCapMultpSensHMCountSum;
-                        Zone(ZoneNum).ZoneVolCapMultpSensHMAverage = HMMultiplierAverage;
-                    }
-                }
-            } // Hybrid model internal thermal mass calcualtion end
-
-            // Hybrid model people count calculation
-            if (HybridModelZone(ZoneNum).PeopleCountCalc_T && UseZoneTimeStepHistory) {
-                Zone(ZoneNum).ZoneMeasuredTemperature = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredTemperatureSchedulePtr);
-                Zone(ZoneNum).ZonePeopleActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
-                Zone(ZoneNum).ZonePeopleSensibleHeatFraction =
-                    GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleSensibleFractionSchedulePtr);
-                Zone(ZoneNum).ZonePeopleRadiantHeatFraction =
-                    GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleRadiationFractionSchedulePtr);
-
-                FractionSensible = Zone(ZoneNum).ZonePeopleSensibleHeatFraction;
-                FractionRadiation = Zone(ZoneNum).ZonePeopleRadiantHeatFraction;
-                ActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
-
-                if (FractionSensible <= 0.0) {
-                    FractionSensible = 0.6;
-                }
-
-                if (FractionRadiation <= 0.0) {
-                    FractionConvection = 0.7;
-                } else {
-                    FractionConvection = 1.0 - FractionRadiation;
-                }
-
-                if (ActivityLevel <= 0.0) {
-                    ActivityLevel = 130.0;
-                }
-
-                if (HybridModelZone(ZoneNum).IncludeSystemSupplyParameters) {
-                    Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirTemperatureSchedulePtr);
-                    Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirMassFlowRateSchedulePtr);
-                    Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio =
-                        GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneSupplyAirHumidityRatioSchedulePtr);
-
-                    // Calculate the air humidity ratio at supply air inlet.
-                    Real64 CpAirInlet(0.0);
-                    CpAirInlet = PsyCpAirFnWTdb(Zone(ZoneNum).ZoneMeasuredSupplyAirHumidityRatio, Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature);
-
-                    SumSysMCp_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet;
-                    SumSysMCpT_HM = Zone(ZoneNum).ZoneMeasuredSupplyAirFlowRate * CpAirInlet * Zone(ZoneNum).ZoneMeasuredSupplyAirTemperature;
-
-                    AA = SumSysMCp_HM + SumHA + SumMCp;
-                    BB = SumSysMCpT_HM + SumIntGainExceptPeople + SumHATsurf - SumHATref + SumMCpT +
-                         (NonAirSystemResponse(ZoneNum) / ZoneMult + SysDepZoneLoadsLagged(ZoneNum));
-                } else {
-                    AA = SumHA + SumMCp;
-                    BB = SumIntGainExceptPeople + SumHATsurf - SumHATref + SumMCpT;
-                }
-
-                CC = AirCap;
-                DD = (3.0 * PreviousMeasuredZT1(ZoneNum) - (3.0 / 2.0) * PreviousMeasuredZT2(ZoneNum) + (1.0 / 3.0) * PreviousMeasuredZT3(ZoneNum));
-
-                SumIntGainPeople = ((11.0 / 6.0) * CC + AA) * Zone(ZoneNum).ZoneMeasuredTemperature - BB - CC * DD;
-                UpperBound = max(0.0, SumIntGain / (ActivityLevel * FractionSensible * FractionConvection));
-                NumPeople = min(UpperBound, max(0.0, SumIntGainPeople / (ActivityLevel * FractionSensible * FractionConvection)));
-
-                if (NumPeople < 0.05) {
-                    NumPeople = 0;
-                }
-                Zone(ZoneNum).NumOccHM = NumPeople;
-            }
-        }
-
-        // Update zone temperatures in the previous steps
-        PreviousMeasuredZT3(ZoneNum) = PreviousMeasuredZT2(ZoneNum);
-        PreviousMeasuredZT2(ZoneNum) = PreviousMeasuredZT1(ZoneNum);
-        PreviousMeasuredZT1(ZoneNum) = ZT(ZoneNum);
     }
 
     // add values to the LEED tabular report related to schedules used by the thermostat objects
