@@ -538,8 +538,8 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     EXPECT_NEAR(4, Zone(1).NumOccHM, 0.1);
 
     // Deallocate everything
+	HybridModel::clear_state();
     Zone.deallocate();
-    HybridModelZone.deallocate();
     AirModel.deallocate();
     ZTM1.deallocate();
     ZTM2.deallocate();

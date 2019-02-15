@@ -5133,7 +5133,7 @@ namespace ZoneTempPredictorCorrector {
 
             // Hybrid modeling start: Added by Sang Hoon Lee May 2015, updated by Han Li 2018
             if ((HybridModelZone(ZoneNum).InfiltrationCalc_T || HybridModelZone(ZoneNum).InternalThermalMassCalc_T ||
-                 HybridModelZone(ZoneNum).PeopelCountCalc_T) &&
+                 HybridModelZone(ZoneNum).PeopleCountCalc_T) &&
                 (!WarmupFlag) && (!DoingSizing)) {
 
                 Zone(ZoneNum).ZoneMeasuredTemperature = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredTemperatureSchedulePtr);
@@ -5271,7 +5271,7 @@ namespace ZoneTempPredictorCorrector {
                     } // Hybrid model internal thermal mass calcualtion end
 
                     // Hybrid model people count calculation
-                    if (HybridModelZone(ZoneNum).PeopelCountCalc_T && UseZoneTimeStepHistory) {
+                    if (HybridModelZone(ZoneNum).PeopleCountCalc_T && UseZoneTimeStepHistory) {
 
                         Real64 AA(0.0);               // Same as A -- Sum of temperature independent terms
                         Real64 BB(0.0);               // Sum of zone internal convective heat gains except for the part from people
@@ -5852,7 +5852,7 @@ namespace ZoneTempPredictorCorrector {
         // Calculate hourly humidity ratio from infiltration + humdidity added from latent load + system added moisture
         LatentGain = ZoneLatentGain(ZoneNum) + SumLatentHTRadSys(ZoneNum) + SumLatentPool(ZoneNum);
 
-        if (HybridModelZone(ZoneNum).PeopelCountCalc_H) {
+        if (HybridModelZone(ZoneNum).PeopleCountCalc_H) {
             LatentGainExceptPeople = ZoneLatentGainExceptPeople(ZoneNum) + SumLatentHTRadSys(ZoneNum) + SumLatentPool(ZoneNum);
         }
 
@@ -5936,7 +5936,7 @@ namespace ZoneTempPredictorCorrector {
         }
 
         // HybridModel with measured humidity ratio begins
-        if ((HybridModelZone(ZoneNum).InfiltrationCalc_H || HybridModelZone(ZoneNum).PeopelCountCalc_H) && (!WarmupFlag) && (!DoingSizing)) {
+        if ((HybridModelZone(ZoneNum).InfiltrationCalc_H || HybridModelZone(ZoneNum).PeopleCountCalc_H) && (!WarmupFlag) && (!DoingSizing)) {
 
             // Get measured zone humidity ratio
             Zone(ZoneNum).ZoneMeasuredHumidityRatio = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredHumidityRatioSchedulePtr);
@@ -6021,8 +6021,7 @@ namespace ZoneTempPredictorCorrector {
                 }
 
                 // Hybrid Model calculate people count
-                if (HybridModelZone(ZoneNum).PeopelCountCalc_H && UseZoneTimeStepHistory) {
-
+                if (HybridModelZone(ZoneNum).PeopleCountCalc_H && UseZoneTimeStepHistory) {
                     Zone(ZoneNum).ZonePeopleActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
                     Zone(ZoneNum).ZonePeopleSensibleHeatFraction =
                         GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleSensibleFractionSchedulePtr);

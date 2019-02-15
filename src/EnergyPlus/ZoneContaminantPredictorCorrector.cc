@@ -2640,7 +2640,8 @@ namespace ZoneContaminantPredictorCorrector {
                 ZoneAirCO2(ZoneNum) = ZoneAirCO2Temp(ZoneNum);
 
                 // Hybrid modeling with CO2 concentration starts here.
-                if ((HybridModelZone(ZoneNum).InfiltrationCalc_C || HybridModelZone(ZoneNum).PeopelCountCalc_C) && (!WarmupFlag) && (!DoingSizing)) {
+
+                if ((HybridModelZone(ZoneNum).InfiltrationCalc_C || HybridModelZone(ZoneNum).PeopleCountCalc_C) && (!WarmupFlag) && (!DoingSizing)) {
 
                     Zone(ZoneNum).ZoneMeasuredCO2Concentration =
                         GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZoneMeasuredCO2ConcentrationSchedulePtr);
@@ -2699,7 +2700,7 @@ namespace ZoneContaminantPredictorCorrector {
                         }
 
                         // Hybrid Model calculate people count
-                        if (HybridModelZone(ZoneNum).PeopelCountCalc_C && UseZoneTimeStepHistory) {
+                        if (HybridModelZone(ZoneNum).PeopleCountCalc_C && UseZoneTimeStepHistory) {
                             Zone(ZoneNum).ZonePeopleActivityLevel =
                                 GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
                             ActivityLevel = GetCurrentScheduleValue(HybridModelZone(ZoneNum).ZonePeopleActivityLevelSchedulePtr);
