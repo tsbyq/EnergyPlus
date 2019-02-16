@@ -483,7 +483,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     Zone(1).OutDryBulbTemp = -6.71;
     ZoneAirHumRat(1) = 0.0024964;
     OutBaroPress = 98916.7;
-    MCPV(1) = 6616;    // Assign TempDepCoef
+    MCPV(1) = 6616;      // Assign TempDepCoef
     MCPTV(1) = 138483.2; // Assign TempIndCoef
     HybridModelZone(1).ZoneMeasuredTemperatureSchedulePtr = 1;
     HybridModelZone(1).ZoneSupplyAirTemperatureSchedulePtr = 2;
@@ -499,7 +499,7 @@ TEST_F(EnergyPlusFixture, HybridModel_CorrectZoneAirTempTest)
     Schedule(HybridModelZone(1).ZonePeopleRadiationFractionSchedulePtr).CurrentValue = 0.3;
 
     CorrectZoneAirTemp(ZoneTempChange, false, true, 10 / 60);
-    //EXPECT_NEAR(0, Zone(1).NumOccHM, 0.1); // Need to initialize SumIntGain
+    // EXPECT_NEAR(0, Zone(1).NumOccHM, 0.1); // Need to initialize SumIntGain
 
     // Case 9: Hybrid model people count with measured humidity ratio (with HVAC)
     HybridModelZone(1).InternalThermalMassCalc_T = false;

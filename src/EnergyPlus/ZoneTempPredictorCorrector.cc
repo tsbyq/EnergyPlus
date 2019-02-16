@@ -5132,16 +5132,12 @@ namespace ZoneTempPredictorCorrector {
             }
 
             // Hybrid modeling start
-            if (HybridModel::FlagHybridModel) {
-                if ((HybridModelZone(ZoneNum).InfiltrationCalc_T || HybridModelZone(ZoneNum).InternalThermalMassCalc_T ||
-                     HybridModelZone(ZoneNum).PeopleCountCalc_T) &&
-                    (!WarmupFlag) && (!DoingSizing)) {
+            if ((HybridModelZone(ZoneNum).InfiltrationCalc_T || HybridModelZone(ZoneNum).InternalThermalMassCalc_T ||
+                 HybridModelZone(ZoneNum).PeopleCountCalc_T) &&
+                (!WarmupFlag) && (!DoingSizing)) {
                 InverseModelTemperature(
                     ZoneNum, SumIntGain, SumIntGainExceptPeople, SumHA, SumHATsurf, SumHATref, SumMCp, SumMCpT, SumSysMCp, SumSysMCpT, AirCap);
-
-                }
-            } // Hybrid model end
-
+            }
 
             MAT(ZoneNum) = ZT(ZoneNum);
 
